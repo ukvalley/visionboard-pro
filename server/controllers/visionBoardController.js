@@ -189,6 +189,7 @@ const updateSection = async (req, res) => {
         completed: completed !== undefined ? completed : visionBoard.sections[sectionName].completed,
         data: data || visionBoard.sections[sectionName].data
       };
+      visionBoard.markModified('sections');
     } else {
       // Update strategySheet section
       if (!visionBoard.strategySheet) {
@@ -198,6 +199,7 @@ const updateSection = async (req, res) => {
         completed: completed !== undefined ? completed : (visionBoard.strategySheet[sectionName]?.completed || false),
         data: data || visionBoard.strategySheet[sectionName]?.data || {}
       };
+      visionBoard.markModified('strategySheet');
     }
 
     await visionBoard.save();

@@ -6,11 +6,17 @@ import { ModuleEmptyState, QuickFillGuide } from '../common/ModuleCard';
 import visionBoardService from '../../services/visionBoardService';
 
 const ResourceManager = ({ visionBoardId }) => {
-  const [activeView, setActiveView] = useState('org');
+  const [activeView, setActiveView] = useState('face');
   const [visionBoard, setVisionBoard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
+
+  // FACe Chart - Functional Accountability Chart
+  const [faceChart, setFaceChart] = useState([]);
+
+  // PACe Chart - Process Accountability Chart
+  const [paceChart, setPaceChart] = useState([]);
 
   // Organization Structure (roles)
   const [roles, setRoles] = useState([]);
@@ -25,14 +31,16 @@ const ResourceManager = ({ visionBoardId }) => {
     dashboardsNeeded: []
   });
 
-  // New role form
-  const [newRole, setNewRole] = useState({
-    role: '',
-    responsibility: '',
-    successMeasure: ''
-  });
+  // 9-Box Grid for Talent Assessment
+  const [talentAssessment, setTalentAssessment] = useState([]);
 
-  const quickStartSteps = ['Org Structure', 'SOP Roadmap', 'Automation'];
+  // New forms
+  const [newRole, setNewRole] = useState({ role: '', responsibility: '', successMeasure: '' });
+  const [newFACE, setNewFACE] = useState({ function: '', owner: '', accountable: '', consulted: '', informed: '' });
+  const [newPACE, setNewPACE] = useState({ process: '', owner: '', frequency: '', status: 'Not Started' });
+  const [newTalent, setNewTalent] = useState({ name: '', role: '', performance: 'Medium', potential: 'Medium', notes: '' });
+
+  const quickStartSteps = ['FACe Chart', 'PACe Chart', 'Org Structure', 'Talent', 'SOPs', 'Automation'];
 
   useEffect(() => {
     if (visionBoardId) {
@@ -47,9 +55,24 @@ const ResourceManager = ({ visionBoardId }) => {
 
       const ss = response.data.strategySheet || {};
 
+      // Load FACe Chart
+      if (ss.organizationalStructure?.data?.faceChart) {
+        setFaceChart(ss.organizationalStructure.data.faceChart);
+      }
+
+      // Load PACe Chart
+      if (ss.sopRoadmap?.data?.paceChart) {
+        setPaceChart(ss.sopRoadmap.data.paceChart);
+      }
+
       // Load Org Structure
       if (ss.organizationalStructure?.data?.roles) {
         setRoles(ss.organizationalStructure.data.roles);
+      }
+
+      // Load Talent Assessment
+      if (ss.organizationalStructure?.data?.talentAssessment) {
+        setTalentAssessment(ss.organizationalStructure.data.talentAssessment);
       }
 
       // Load SOP Roadmap
@@ -91,10 +114,9 @@ const ResourceManager = ({ visionBoardId }) => {
 
   const handleAddRole = async () => {
     if (!newRole.role.trim()) return;
-
     const updatedRoles = [...roles, { ...newRole }];
     setRoles(updatedRoles);
-    await saveSection('organizationalStructure', { roles: updatedRoles });
+    await saveSection('organizationalStructure', { roles: updatedRoles, faceChart, talentAssessment });
     setShowRoleModal(false);
     setNewRole({ role: '', responsibility: '', successMeasure: '' });
   };
@@ -102,11 +124,56 @@ const ResourceManager = ({ visionBoardId }) => {
   const handleDeleteRole = async (index) => {
     const updatedRoles = roles.filter((_, i) => i !== index);
     setRoles(updatedRoles);
-    await saveSection('organizationalStructure', { roles: updatedRoles });
+    await saveSection('organizationalStructure', { roles: updatedRoles, faceChart, talentAssessment });
+  };
+
+  // FACe Chart handlers
+  const handleAddFACE = async () => {
+    if (!newFACE.function.trim()) return;
+    const updated = [...faceChart, { ...newFACE, id: Date.now() }];
+    setFaceChart(updated);
+    await saveSection('organizationalStructure', { roles, faceChart: updated, talentAssessment });
+    setNewFACE({ function: '', owner: '', accountable: '', consulted: '', informed: '' });
+  };
+
+  const handleDeleteFACE = async (index) => {
+    const updated = faceChart.filter((_, i) => i !== index);
+    setFaceChart(updated);
+    await saveSection('organizationalStructure', { roles, faceChart: updated, talentAssessment });
+  };
+
+  // PACe Chart handlers
+  const handleAddPACE = async () => {
+    if (!newPACE.process.trim()) return;
+    const updated = [...paceChart, { ...newPACE, id: Date.now() }];
+    setPaceChart(updated);
+    await saveSection('sopRoadmap', { sops, paceChart: updated });
+    setNewPACE({ process: '', owner: '', frequency: '', status: 'Not Started' });
+  };
+
+  const handleDeletePACE = async (index) => {
+    const updated = paceChart.filter((_, i) => i !== index);
+    setPaceChart(updated);
+    await saveSection('sopRoadmap', { sops, paceChart: updated });
+  };
+
+  // Talent Assessment handlers
+  const handleAddTalent = async () => {
+    if (!newTalent.name.trim()) return;
+    const updated = [...talentAssessment, { ...newTalent, id: Date.now() }];
+    setTalentAssessment(updated);
+    await saveSection('organizationalStructure', { roles, faceChart, talentAssessment: updated });
+    setNewTalent({ name: '', role: '', performance: 'Medium', potential: 'Medium', notes: '' });
+  };
+
+  const handleDeleteTalent = async (index) => {
+    const updated = talentAssessment.filter((_, i) => i !== index);
+    setTalentAssessment(updated);
+    await saveSection('organizationalStructure', { roles, faceChart, talentAssessment: updated });
   };
 
   const handleSaveSOPs = async () => {
-    await saveSection('sopRoadmap', { sops });
+    await saveSection('sopRoadmap', { sops, paceChart });
   };
 
   const handleSaveAutomation = async () => {
@@ -133,7 +200,10 @@ const ResourceManager = ({ visionBoardId }) => {
       {/* Navigation Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-2">
         {[
+          { id: 'face', label: 'FACe Chart', icon: '📊' },
+          { id: 'pace', label: 'PACe Chart', icon: '🔄' },
           { id: 'org', label: 'Org Structure', icon: '🏢' },
+          { id: 'talent', label: '9-Box Grid', icon: '👥' },
           { id: 'sop', label: 'SOP Roadmap', icon: '📋' },
           { id: 'automation', label: 'Automation', icon: '⚙️' }
         ].map(tab => (
@@ -154,6 +224,127 @@ const ResourceManager = ({ visionBoardId }) => {
 
       {/* Content */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+        {/* FACe Chart - Functional Accountability Chart */}
+        {activeView === 'face' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">FACe Chart</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Functional Accountability Chart - Clarify who owns what function
+                </p>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-gray-700 bg-purple-50 dark:bg-purple-900/20">
+                    <th className="py-2 px-3 text-left font-semibold">Function</th>
+                    <th className="py-2 px-3 text-center font-semibold text-green-600">Owner (O)</th>
+                    <th className="py-2 px-3 text-center font-semibold text-blue-600">Accountable (A)</th>
+                    <th className="py-2 px-3 text-center font-semibold text-yellow-600">Consulted (C)</th>
+                    <th className="py-2 px-3 text-center font-semibold text-gray-500">Informed (I)</th>
+                    <th className="w-16"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {faceChart.map((row, index) => (
+                    <tr key={row.id || index} className="border-b border-gray-100 dark:border-gray-700/50">
+                      <td className="py-2 px-3 font-medium">{row.function}</td>
+                      <td className="py-2 px-3 text-center text-green-600 font-medium">{row.owner || '-'}</td>
+                      <td className="py-2 px-3 text-center text-blue-600">{row.accountable || '-'}</td>
+                      <td className="py-2 px-3 text-center text-yellow-600">{row.consulted || '-'}</td>
+                      <td className="py-2 px-3 text-center text-gray-500">{row.informed || '-'}</td>
+                      <td className="py-2 px-3">
+                        <button onClick={() => handleDeleteFACE(index)} className="text-gray-400 hover:text-red-500">✕</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Add new FACe row */}
+            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+              <div className="grid grid-cols-6 gap-2">
+                <input type="text" className="input text-sm" placeholder="Function" value={newFACE.function} onChange={(e) => setNewFACE(prev => ({ ...prev, function: e.target.value }))} />
+                <input type="text" className="input text-sm" placeholder="Owner" value={newFACE.owner} onChange={(e) => setNewFACE(prev => ({ ...prev, owner: e.target.value }))} />
+                <input type="text" className="input text-sm" placeholder="Accountable" value={newFACE.accountable} onChange={(e) => setNewFACE(prev => ({ ...prev, accountable: e.target.value }))} />
+                <input type="text" className="input text-sm" placeholder="Consulted" value={newFACE.consulted} onChange={(e) => setNewFACE(prev => ({ ...prev, consulted: e.target.value }))} />
+                <input type="text" className="input text-sm" placeholder="Informed" value={newFACE.informed} onChange={(e) => setNewFACE(prev => ({ ...prev, informed: e.target.value }))} />
+                <Button variant="primary" size="sm" onClick={handleAddFACE}>Add</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* PACe Chart - Process Accountability Chart */}
+        {activeView === 'pace' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">PACe Chart</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Process Accountability Chart - Define who owns each process
+                </p>
+              </div>
+            </div>
+
+            {paceChart.length === 0 ? (
+              <ModuleEmptyState moduleName="PACe Chart" onAction={() => {}} actionText="Add Your First Process" />
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/20">
+                      <th className="py-2 px-3 text-left font-semibold">Process</th>
+                      <th className="py-2 px-3 text-left font-semibold">Owner</th>
+                      <th className="py-2 px-3 text-left font-semibold">Frequency</th>
+                      <th className="py-2 px-3 text-left font-semibold">Status</th>
+                      <th className="w-16"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paceChart.map((row, index) => (
+                      <tr key={row.id || index} className="border-b border-gray-100 dark:border-gray-700/50">
+                        <td className="py-2 px-3 font-medium">{row.process}</td>
+                        <td className="py-2 px-3">{row.owner || '-'}</td>
+                        <td className="py-2 px-3">{row.frequency || '-'}</td>
+                        <td className="py-2 px-3">
+                          <span className={`px-2 py-0.5 rounded text-xs ${
+                            row.status === 'Complete' ? 'bg-green-100 text-green-700' :
+                            row.status === 'In Progress' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-gray-100 text-gray-700'
+                          }`}>{row.status}</span>
+                        </td>
+                        <td className="py-2 px-3">
+                          <button onClick={() => handleDeletePACE(index)} className="text-gray-400 hover:text-red-500">✕</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Add new PACe row */}
+            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+              <div className="grid grid-cols-5 gap-2">
+                <input type="text" className="input text-sm" placeholder="Process" value={newPACE.process} onChange={(e) => setNewPACE(prev => ({ ...prev, process: e.target.value }))} />
+                <input type="text" className="input text-sm" placeholder="Owner" value={newPACE.owner} onChange={(e) => setNewPACE(prev => ({ ...prev, owner: e.target.value }))} />
+                <input type="text" className="input text-sm" placeholder="Frequency" value={newPACE.frequency} onChange={(e) => setNewPACE(prev => ({ ...prev, frequency: e.target.value }))} />
+                <select className="input text-sm" value={newPACE.status} onChange={(e) => setNewPACE(prev => ({ ...prev, status: e.target.value }))}>
+                  <option>Not Started</option>
+                  <option>In Progress</option>
+                  <option>Complete</option>
+                </select>
+                <Button variant="primary" size="sm" onClick={handleAddPACE}>Add</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Org Structure */}
         {activeView === 'org' && (
           <div className="space-y-6">
@@ -208,6 +399,86 @@ const ResourceManager = ({ visionBoardId }) => {
                 </table>
               </div>
             )}
+          </div>
+        )}
+
+        {/* 9-Box Grid - Talent Assessment */}
+        {activeView === 'talent' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">9-Box Grid - Talent Assessment</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Assess team members on performance and potential
+                </p>
+              </div>
+            </div>
+
+            {/* 9-Box Grid Visual */}
+            <div className="grid grid-cols-3 gap-1 bg-gray-200 dark:bg-gray-700 rounded-lg p-1 text-center text-xs">
+              <div className="bg-yellow-100 dark:bg-yellow-900/30 p-2 rounded">High Potential<br/>Low Performance</div>
+              <div className="bg-green-100 dark:bg-green-900/30 p-2 rounded">High Potential<br/>Med Performance</div>
+              <div className="bg-green-200 dark:bg-green-800/30 p-2 rounded font-bold">Star<br/>High/High</div>
+              <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded">Low Potential<br/>Low Performance</div>
+              <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded">Core Player<br/>Med/Med</div>
+              <div className="bg-green-100 dark:bg-green-900/30 p-2 rounded">High Performer<br/>Med Potential</div>
+              <div className="bg-red-100 dark:bg-red-900/30 p-2 rounded">Underperformer</div>
+              <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded">Solid Performer<br/>Low Potential</div>
+              <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded">Expert<br/>High/Low</div>
+            </div>
+
+            {/* Talent List */}
+            <div className="space-y-3">
+              {talentAssessment.map((person, index) => (
+                <div key={person.id || index} className="flex items-center gap-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+                  <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 font-bold">
+                    {person.name?.charAt(0) || '?'}
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-900 dark:text-white">{person.name}</div>
+                    <div className="text-sm text-gray-500">{person.role}</div>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="text-center">
+                      <div className="text-xs text-gray-500">Performance</div>
+                      <span className={`px-2 py-0.5 rounded text-xs ${
+                        person.performance === 'High' ? 'bg-green-100 text-green-700' :
+                        person.performance === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-red-100 text-red-700'
+                      }`}>{person.performance}</span>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xs text-gray-500">Potential</div>
+                      <span className={`px-2 py-0.5 rounded text-xs ${
+                        person.potential === 'High' ? 'bg-green-100 text-green-700' :
+                        person.potential === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-red-100 text-red-700'
+                      }`}>{person.potential}</span>
+                    </div>
+                  </div>
+                  <button onClick={() => handleDeleteTalent(index)} className="text-gray-400 hover:text-red-500">✕</button>
+                </div>
+              ))}
+            </div>
+
+            {/* Add Talent Form */}
+            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+              <div className="grid grid-cols-5 gap-2">
+                <input type="text" className="input text-sm" placeholder="Name" value={newTalent.name} onChange={(e) => setNewTalent(prev => ({ ...prev, name: e.target.value }))} />
+                <input type="text" className="input text-sm" placeholder="Role" value={newTalent.role} onChange={(e) => setNewTalent(prev => ({ ...prev, role: e.target.value }))} />
+                <select className="input text-sm" value={newTalent.performance} onChange={(e) => setNewTalent(prev => ({ ...prev, performance: e.target.value }))}>
+                  <option>Low</option>
+                  <option>Medium</option>
+                  <option>High</option>
+                </select>
+                <select className="input text-sm" value={newTalent.potential} onChange={(e) => setNewTalent(prev => ({ ...prev, potential: e.target.value }))}>
+                  <option>Low</option>
+                  <option>Medium</option>
+                  <option>High</option>
+                </select>
+                <Button variant="primary" size="sm" onClick={handleAddTalent}>Add</Button>
+              </div>
+            </div>
           </div>
         )}
 

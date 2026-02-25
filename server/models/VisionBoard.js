@@ -349,24 +349,30 @@ const visionBoardSchema = new mongoose.Schema({
 
 // Calculate overall progress before saving
 visionBoardSchema.pre('save', function(next) {
-  // Legacy sections progress
-  const legacySections = Object.values(this.sections || {});
-  const legacyCompleted = legacySections.filter(s => s.completed).length;
+  // Known section names
+  const legacySectionNames = ['businessOverview', 'financialGoals', 'growthStrategy',
+    'productService', 'systemsToBuild', 'teamPlan', 'brandGoals', 'lifestyleVision'];
 
-  // Strategy sheet sections progress
-  const strategySections = Object.keys(this.strategySheet || {}).filter(
-    key => this.strategySheet[key] && typeof this.strategySheet[key] === 'object'
-  );
-  const strategyCompleted = strategySections.filter(
-    key => this.strategySheet[key]?.completed
+  const strategySectionNames = ['companyOverview', 'corePurpose', 'vision', 'mission', 'brandPromise',
+    'coreValues', 'bhag', 'vividDescription', 'swotAnalysis', 'strategicPriorities',
+    'threeYearStrategy', 'smartGoals', 'quarterlyPlan', 'revenueModel',
+    'organizationalStructure', 'sopRoadmap', 'automationSystems', 'kpiDashboard',
+    'riskManagement', 'strategySummary'];
+
+  // Legacy sections progress
+  const legacyCompleted = legacySectionNames.filter(
+    name => this.sections?.[name]?.completed
   ).length;
 
-  const totalSections = legacySections.length + strategySections.length;
+  // Strategy sheet sections progress
+  const strategyCompleted = strategySectionNames.filter(
+    name => this.strategySheet?.[name]?.completed
+  ).length;
+
+  const totalSections = legacySectionNames.length + strategySectionNames.length;
   const totalCompleted = legacyCompleted + strategyCompleted;
 
-  if (totalSections > 0) {
-    this.overallProgress = Math.round((totalCompleted / totalSections) * 100);
-  }
+  this.overallProgress = Math.round((totalCompleted / totalSections) * 100);
 
   next();
 });
