@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "buildCommand": "cd client && npm install && npm run build",
+  "outputDirectory": "client/dist",
+  "installCommand": "npm install && cd client && npm install",
+  "framework": null,
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://visionboard-pro-server.onrender.com/api/$1" }
+  ],
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}
