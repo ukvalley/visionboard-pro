@@ -6,6 +6,6 @@
   "framework": null,
   "rewrites": [
     { "source": "/api/(.*)", "destination": "https://visionboard-pro-server.onrender.com/api/$1" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/((?!api).*)", "destination": "/index.html" }
   ]
 }
