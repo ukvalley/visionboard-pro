@@ -182,13 +182,13 @@ const Dashboard = () => {
           </div>
           <div className="flex gap-4 overflow-x-auto pb-2">
             {visionBoards.map(board => (
-              <button
+              <Link
                 key={board._id}
-                onClick={() => setActiveBoard(board)}
-                className={`flex-shrink-0 p-4 rounded-xl border-2 transition-all ${
+                to={`/visionboards/${board._id}`}
+                className={`flex-shrink-0 p-4 rounded-xl border-2 transition-all cursor-pointer group ${
                   activeBoard?._id === board._id
                     ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-primary-400 dark:hover:border-primary-600'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -196,11 +196,14 @@ const Dashboard = () => {
                     {board.name.charAt(0)}
                   </div>
                   <div className="text-left">
-                    <p className="font-medium text-gray-900 dark:text-white">{board.name}</p>
-                    <p className="text-xs text-gray-500">{board.overallProgress}% complete</p>
+                    <p className="font-medium text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400">{board.name}</p>
+                    <p className="text-xs text-gray-500">{board.overallProgress || 0}% complete</p>
                   </div>
+                  <svg className="w-4 h-4 text-gray-400 group-hover:text-primary-500 ml-2 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </div>
-              </button>
+              </Link>
             ))}
           </div>
         </Card>
