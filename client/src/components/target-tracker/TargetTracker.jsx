@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Modal from '../common/Modal';
-import { ModuleEmptyState, QuickFillGuide } from '../common/ModuleCard';
+import { ModuleEmptyState } from '../common/ModuleCard';
 import visionBoardService from '../../services/visionBoardService';
 
 const TargetTracker = ({ visionBoardId }) => {
@@ -45,7 +45,6 @@ const TargetTracker = ({ visionBoardId }) => {
   // New KPI form
   const [newKPI, setNewKPI] = useState({ name: '', target: '', current: '', unit: '' });
 
-  const quickStartSteps = ['OKRs', 'SMART Goals', 'Quarterly Plan', 'KPIs'];
 
   useEffect(() => {
     if (visionBoardId) {
@@ -191,12 +190,6 @@ const TargetTracker = ({ visionBoardId }) => {
 
   return (
     <div className="space-y-6">
-      {/* Quick Start Guide */}
-      <QuickFillGuide
-        steps={quickStartSteps}
-        currentStep={activeView === 'okrs' ? 0 : activeView === 'smart' ? 1 : activeView === 'quarterly' ? 2 : 3}
-        onStepClick={(idx) => setActiveView(['okrs', 'smart', 'quarterly', 'kpis'][idx])}
-      />
 
       {/* Navigation Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-2">

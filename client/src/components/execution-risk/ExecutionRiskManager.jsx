@@ -2,12 +2,10 @@ import { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Modal from '../common/Modal';
-import { ModuleEmptyState, QuickFillGuide } from '../common/ModuleCard';
+import { ModuleEmptyState } from '../common/ModuleCard';
 import visionBoardService from '../../services/visionBoardService';
 
 const ExecutionRiskManager = ({ visionBoardId }) => {
-  const views = ['www', 'habits', 'priorities', 'risks', 'portfolio', 'ai'];
-  const quickStartSteps = ['WWW Actions', 'Habits', 'Priorities', 'Risks', 'Portfolio', 'AI Simulation'];
 
   const [activeView, setActiveView] = useState('www');
   const [visionBoard, setVisionBoard] = useState(null);
@@ -207,11 +205,6 @@ const ExecutionRiskManager = ({ visionBoardId }) => {
 
   return (
     <div className="space-y-6">
-      <QuickFillGuide
-        steps={quickStartSteps}
-        currentStep={views.indexOf(activeView)}
-        onStepClick={(idx) => setActiveView(views[idx])}
-      />
 
       {/* Navigation Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-2">

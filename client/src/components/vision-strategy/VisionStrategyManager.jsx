@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Modal from '../common/Modal';
-import { ModuleEmptyState, QuickFillGuide } from '../common/ModuleCard';
+import { ModuleEmptyState } from '../common/ModuleCard';
 import visionBoardService from '../../services/visionBoardService';
 
 const VisionStrategyManager = ({ visionBoardId }) => {
@@ -40,15 +40,6 @@ const VisionStrategyManager = ({ visionBoardId }) => {
     promisedOutcome: '',
     timeframe: ''
   });
-
-  const quickStartSteps = [
-    'Company Overview',
-    'Mission & Vision',
-    'Core Values',
-    'Brand Promise',
-    'BHAG',
-    'SWOT Analysis'
-  ];
 
   useEffect(() => {
     if (visionBoardId) {
@@ -192,19 +183,6 @@ const VisionStrategyManager = ({ visionBoardId }) => {
 
   return (
     <div className="space-y-6">
-      {/* Quick Start Guide */}
-      <QuickFillGuide
-        steps={quickStartSteps}
-        currentStep={activeView === 'mission' ? 0 :
-                     activeView === 'company' ? 1 :
-                     activeView === 'values' ? 2 :
-                     activeView === 'brand' ? 3 :
-                     activeView === 'bhag' ? 4 : 5}
-        onStepClick={(idx) => {
-          const views = ['mission', 'company', 'values', 'brand', 'bhag', 'swot'];
-          setActiveView(views[idx]);
-        }}
-      />
 
       {/* Navigation Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-2">

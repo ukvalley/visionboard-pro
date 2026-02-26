@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Modal from '../common/Modal';
-import { ModuleEmptyState, QuickFillGuide } from '../common/ModuleCard';
+import { ModuleEmptyState } from '../common/ModuleCard';
 import visionBoardService from '../../services/visionBoardService';
 
 const FinancialInsights = ({ visionBoardId }) => {
@@ -61,8 +61,6 @@ const FinancialInsights = ({ visionBoardId }) => {
   const [aiAnalysis, setAiAnalysis] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
 
-  const views = ['fpa', 'cash', 'forecast', 'roi', 'revenue', 'kpis', 'ai'];
-  const quickStartSteps = ['FP&A Dashboard', 'CASh', 'Forecasting', 'ROI', 'Revenue', 'KPIs', 'AI Analysis'];
 
   useEffect(() => {
     if (visionBoardId) {
@@ -200,12 +198,6 @@ const FinancialInsights = ({ visionBoardId }) => {
 
   return (
     <div className="space-y-6">
-      {/* Quick Start Guide */}
-      <QuickFillGuide
-        steps={quickStartSteps}
-        currentStep={views.indexOf(activeView)}
-        onStepClick={(idx) => setActiveView(views[idx])}
-      />
 
       {/* Navigation Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-2">

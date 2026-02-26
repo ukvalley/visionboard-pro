@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Modal from '../common/Modal';
-import { ModuleEmptyState, QuickFillGuide } from '../common/ModuleCard';
+import { ModuleEmptyState } from '../common/ModuleCard';
 import visionBoardService from '../../services/visionBoardService';
 
 const ResourceManager = ({ visionBoardId }) => {
@@ -40,7 +40,6 @@ const ResourceManager = ({ visionBoardId }) => {
   const [newPACE, setNewPACE] = useState({ process: '', owner: '', frequency: '', status: 'Not Started' });
   const [newTalent, setNewTalent] = useState({ name: '', role: '', performance: 'Medium', potential: 'Medium', notes: '' });
 
-  const quickStartSteps = ['FACe Chart', 'PACe Chart', 'Org Structure', 'Talent', 'SOPs', 'Automation'];
 
   useEffect(() => {
     if (visionBoardId) {
@@ -190,12 +189,6 @@ const ResourceManager = ({ visionBoardId }) => {
 
   return (
     <div className="space-y-6">
-      {/* Quick Start Guide */}
-      <QuickFillGuide
-        steps={quickStartSteps}
-        currentStep={activeView === 'org' ? 0 : activeView === 'sop' ? 1 : 2}
-        onStepClick={(idx) => setActiveView(idx === 0 ? 'org' : idx === 1 ? 'sop' : 'automation')}
-      />
 
       {/* Navigation Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-2">
