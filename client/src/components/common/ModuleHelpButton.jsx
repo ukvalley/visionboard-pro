@@ -26,7 +26,7 @@ const ModuleHelpButton = ({ guideKey }) => {
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         title={guide.title}
-        size="lg"
+        size="full"
       >
         <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
           {/* What is it */}

@@ -38,7 +38,8 @@ const Modal = ({
     md: 'max-w-lg',
     lg: 'max-w-2xl',
     xl: 'max-w-4xl',
-    full: 'max-w-6xl'
+    '2xl': 'max-w-5xl',
+    full: 'w-[80vw] max-w-6xl'
   };
 
   return (
