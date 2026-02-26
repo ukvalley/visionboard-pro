@@ -5,6 +5,7 @@ import Modal from '../common/Modal';
 import { ModuleEmptyState } from '../common/ModuleCard';
 import ModuleHelpButton from '../common/ModuleHelpButton';
 import visionBoardService from '../../services/visionBoardService';
+import aiService from '../../services/aiService';
 
 const CollaborationHub = ({ visionBoardId }) => {
 
@@ -58,14 +59,18 @@ const CollaborationHub = ({ visionBoardId }) => {
     }
   };
 
-  const saveCollaboration = async () => {
+  const saveCollaboration = async (updatedData = null) => {
     try {
-      await visionBoardService.updateSection(visionBoardId, 'collaboration', {
+      const dataToSave = updatedData || { workspaces, discussions, mentorships, knowledgeBase };
+      const response = await visionBoardService.updateSection(visionBoardId, 'collaboration', {
         completed: true,
-        data: { workspaces, discussions, mentorships, knowledgeBase }
+        data: dataToSave
       });
+      setVisionBoard(response.data);
+      return true;
     } catch (error) {
       console.error('Failed to save:', error);
+      return false;
     }
   };
 
@@ -77,29 +82,33 @@ const CollaborationHub = ({ visionBoardId }) => {
     setUserMessage('');
     setAiLoading(true);
 
-    setTimeout(() => {
-      const responses = {
-        'strategy': 'Based on your vision board, I recommend focusing on your core differentiators first. What makes your business unique in the market?',
-        'growth': 'For growth, consider the Rockefeller Habits: 1) Priorities, 2) Data, 3) Meeting Rhythm. These three pillars will help you scale predictably.',
-        'team': 'Building a strong team starts with clarity. Use the FACe chart to define who owns what, and the 9-box grid to assess and develop talent.',
-        'revenue': 'To accelerate revenue, focus on your conversion funnel. What\'s your current lead-to-customer conversion rate? Even small improvements can have big impacts.',
-        'default': 'Great question! I\'m here to help you implement the Scaling Up methodology. Ask me about strategy, execution, people, or cash - the four major decisions every growing company faces.'
+    try {
+      // Call real AI service
+      const allMessages = [...aiMessages, userMsg];
+      const result = await aiService.chat(allMessages, { visionBoard });
+
+      const aiMsg = {
+        role: 'assistant',
+        content: result.success ? result.message : (result.fallback || 'Sorry, I encountered an error. Please try again.')
       };
-
-      const keywords = Object.keys(responses);
-      const matchedKeyword = keywords.find(k => userMessage.toLowerCase().includes(k)) || 'default';
-
-      const aiMsg = { role: 'assistant', content: responses[matchedKeyword] };
       setAiMessages(prev => [...prev, aiMsg]);
+    } catch (error) {
+      console.error('AI Chat error:', error);
+      const aiMsg = {
+        role: 'assistant',
+        content: 'Sorry, I encountered an error. Please check if the OpenAI API key is configured on the server.'
+      };
+      setAiMessages(prev => [...prev, aiMsg]);
+    } finally {
       setAiLoading(false);
-    }, 1000);
+    }
   };
 
   const handleAddWorkspace = async () => {
     if (!newWorkspace.name.trim()) return;
     const updated = [...workspaces, { ...newWorkspace, id: Date.now(), createdAt: new Date().toISOString() }];
     setWorkspaces(updated);
-    await saveCollaboration();
+    await saveCollaboration({ workspaces: updated, discussions, mentorships, knowledgeBase });
     setShowWorkspaceModal(false);
     setNewWorkspace({ name: '', description: '', members: [] });
   };
@@ -108,7 +117,7 @@ const CollaborationHub = ({ visionBoardId }) => {
     if (!newDiscussion.title.trim()) return;
     const updated = [...discussions, { ...newDiscussion, id: Date.now(), createdAt: new Date().toISOString(), replies: [] }];
     setDiscussions(updated);
-    await saveCollaboration();
+    await saveCollaboration({ workspaces, discussions: updated, mentorships, knowledgeBase });
     setNewDiscussion({ title: '', content: '', author: '' });
   };
 
@@ -116,7 +125,7 @@ const CollaborationHub = ({ visionBoardId }) => {
     if (!newMentorship.mentor.trim() || !newMentorship.mentee.trim()) return;
     const updated = [...mentorships, { ...newMentorship, id: Date.now(), status: 'Active' }];
     setMentorships(updated);
-    await saveCollaboration();
+    await saveCollaboration({ workspaces, discussions, mentorships: updated, knowledgeBase });
     setNewMentorship({ mentor: '', mentee: '', topic: '', frequency: 'Monthly' });
   };
 
@@ -124,7 +133,7 @@ const CollaborationHub = ({ visionBoardId }) => {
     if (!newArticle.title.trim()) return;
     const updated = [...knowledgeBase, { ...newArticle, id: Date.now(), createdAt: new Date().toISOString() }];
     setKnowledgeBase(updated);
-    await saveCollaboration();
+    await saveCollaboration({ workspaces, discussions, mentorships, knowledgeBase: updated });
     setNewArticle({ title: '', category: 'Process', content: '' });
   };
 
@@ -254,7 +263,11 @@ const CollaborationHub = ({ visionBoardId }) => {
                           </div>
                         )}
                       </div>
-                      <button onClick={() => setWorkspaces(workspaces.filter(w => w.id !== ws.id))} className="text-gray-400 hover:text-red-500">✕</button>
+                      <button onClick={async () => {
+                        const updated = workspaces.filter(w => w.id !== ws.id);
+                        setWorkspaces(updated);
+                        await saveCollaboration({ workspaces: updated, discussions, mentorships, knowledgeBase });
+                      }} className="text-gray-400 hover:text-red-500">✕</button>
                     </div>
                   </div>
                 ))}
@@ -314,7 +327,11 @@ const CollaborationHub = ({ visionBoardId }) => {
                         {disc.replies?.length > 0 && <span>{disc.replies.length} replies</span>}
                       </div>
                     </div>
-                    <button onClick={() => setDiscussions(discussions.filter(d => d.id !== disc.id))} className="text-gray-400 hover:text-red-500">✕</button>
+                    <button onClick={async () => {
+                      const updated = discussions.filter(d => d.id !== disc.id);
+                      setDiscussions(updated);
+                      await saveCollaboration({ workspaces, discussions: updated, mentorships, knowledgeBase });
+                    }} className="text-gray-400 hover:text-red-500">✕</button>
                   </div>
                 </div>
               ))}
@@ -367,7 +384,11 @@ const CollaborationHub = ({ visionBoardId }) => {
                       <span className={`px-2 py-0.5 rounded text-xs ${m.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>{m.status}</span>
                     </div>
                   </div>
-                  <button onClick={() => setMentorships(mentorships.filter(x => x.id !== m.id))} className="text-gray-400 hover:text-red-500">✕</button>
+                  <button onClick={async () => {
+                    const updated = mentorships.filter(x => x.id !== m.id);
+                    setMentorships(updated);
+                    await saveCollaboration({ workspaces, discussions, mentorships: updated, knowledgeBase });
+                  }} className="text-gray-400 hover:text-red-500">✕</button>
                 </div>
               ))}
             </div>
@@ -424,7 +445,11 @@ const CollaborationHub = ({ visionBoardId }) => {
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">{article.content}</p>
                     </div>
-                    <button onClick={() => setKnowledgeBase(knowledgeBase.filter(a => a.id !== article.id))} className="text-gray-400 hover:text-red-500 ml-4">✕</button>
+                    <button onClick={async () => {
+                      const updated = knowledgeBase.filter(a => a.id !== article.id);
+                      setKnowledgeBase(updated);
+                      await saveCollaboration({ workspaces, discussions, mentorships, knowledgeBase: updated });
+                    }} className="text-gray-400 hover:text-red-500 ml-4">✕</button>
                   </div>
                 </div>
               ))}

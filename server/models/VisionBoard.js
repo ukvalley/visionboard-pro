@@ -129,10 +129,36 @@ const strategySheetSchema = new mongoose.Schema({
     completed: { type: Boolean, default: false },
     data: {
       priorities: [{
+        id: { type: Number },
         name: { type: String, default: '' },
         whyItMatters: { type: String, default: '' },
         capabilitiesRequired: { type: String, default: '' },
         successLooksLike: { type: String, default: '' }
+      }],
+      // WWW Actions
+      wwwActions: [{
+        id: { type: Number },
+        who: { type: String, default: '' },
+        what: { type: String, default: '' },
+        when: { type: String, default: '' },
+        status: { type: String, enum: ['Pending', 'Done', ''], default: 'Pending' }
+      }],
+      // Rockefeller Habits
+      habits: [{
+        id: { type: Number },
+        name: { type: String, default: '' },
+        description: { type: String, default: '' },
+        completed: { type: Boolean, default: false }
+      }],
+      // Project Portfolio
+      projects: [{
+        id: { type: Number },
+        name: { type: String, default: '' },
+        owner: { type: String, default: '' },
+        deadline: { type: String, default: '' },
+        status: { type: String, enum: ['Planning', 'In Progress', 'On Hold', 'Complete', ''], default: 'Planning' },
+        priority: { type: String, enum: ['Low', 'Medium', 'High', ''], default: 'Medium' },
+        progress: { type: Number, default: 0 }
       }]
     }
   },
@@ -168,7 +194,25 @@ const strategySheetSchema = new mongoose.Schema({
         metric: { type: String, default: '' },
         target: { type: String, default: '' },
         deadline: { type: Date },
-        owner: { type: String, default: '' }
+        owner: { type: String, default: '' },
+        progress: { type: Number, default: 0 }
+      }],
+      okrs: [{
+        id: { type: Number },
+        objective: { type: String, default: '' },
+        keyResults: [{
+          text: { type: String, default: '' },
+          progress: { type: Number, default: 0 }
+        }],
+        owner: { type: String, default: '' },
+        progress: { type: Number, default: 0 }
+      }],
+      kpis: [{
+        id: { type: Number },
+        name: { type: String, default: '' },
+        target: { type: String, default: '' },
+        current: { type: String, default: '' },
+        unit: { type: String, default: '' }
       }]
     }
   },
@@ -197,7 +241,35 @@ const strategySheetSchema = new mongoose.Schema({
       monthlyRevenueTarget: { type: Number, default: 0 },
       annualRevenueTarget: { type: Number, default: 0 },
       leadRequirements: { type: String, default: '' },
-      conversionAssumptions: { type: String, default: '' }
+      conversionAssumptions: { type: String, default: '' },
+      // FP&A Dashboard fields
+      currentRevenue: { type: Number, default: 0 },
+      currentExpenses: { type: Number, default: 0 },
+      grossMargin: { type: Number, default: 0 },
+      netMargin: { type: Number, default: 0 },
+      cashOnHand: { type: Number, default: 0 },
+      monthlyBurn: { type: Number, default: 0 },
+      runway: { type: Number, default: 0 },
+      // CASh Strategies
+      cashStrategies: [{
+        name: { type: String, default: '' },
+        impact: { type: String, enum: ['Low', 'Medium', 'High', ''], default: '' }
+      }],
+      // Forecasting
+      forecast: {
+        year1Revenue: { type: Number, default: 0 },
+        year2Revenue: { type: Number, default: 0 },
+        year3Revenue: { type: Number, default: 0 },
+        growthRate: { type: Number, default: 0 },
+        assumptions: { type: String, default: '' }
+      },
+      // ROI Calculations
+      roiCalculations: [{
+        name: { type: String, default: '' },
+        investment: { type: Number, default: 0 },
+        return: { type: Number, default: 0 },
+        timeframe: { type: Number, default: 12 }
+      }]
     }
   },
 
@@ -209,6 +281,22 @@ const strategySheetSchema = new mongoose.Schema({
         role: { type: String, default: '' },
         responsibility: { type: String, default: '' },
         successMeasure: { type: String, default: '' }
+      }],
+      faceChart: [{
+        id: { type: Number },
+        function: { type: String, default: '' },
+        owner: { type: String, default: '' },
+        accountable: { type: String, default: '' },
+        consulted: { type: String, default: '' },
+        informed: { type: String, default: '' }
+      }],
+      talentAssessment: [{
+        id: { type: Number },
+        name: { type: String, default: '' },
+        role: { type: String, default: '' },
+        performance: { type: String, enum: ['Low', 'Medium', 'High', ''], default: '' },
+        potential: { type: String, enum: ['Low', 'Medium', 'High', ''], default: '' },
+        notes: { type: String, default: '' }
       }]
     }
   },
@@ -221,6 +309,13 @@ const strategySheetSchema = new mongoose.Schema({
         order: { type: Number, default: 0 },
         name: { type: String, default: '' },
         description: { type: String, default: '' }
+      }],
+      paceChart: [{
+        id: { type: Number },
+        process: { type: String, default: '' },
+        owner: { type: String, default: '' },
+        frequency: { type: String, default: '' },
+        status: { type: String, enum: ['Not Started', 'In Progress', 'Complete', ''], default: '' }
       }]
     }
   },
@@ -252,11 +347,49 @@ const strategySheetSchema = new mongoose.Schema({
     completed: { type: Boolean, default: false },
     data: {
       risks: [{
+        id: { type: Number },
         risk: { type: String, default: '' },
         probability: { type: String, enum: ['Low', 'Medium', 'High', ''], default: '' },
         impact: { type: String, enum: ['Low', 'Medium', 'High', ''], default: '' },
         preventionStrategy: { type: String, default: '' },
         monitoringMethod: { type: String, default: '' }
+      }]
+    }
+  },
+
+  // Section 21: Collaboration Hub
+  collaboration: {
+    completed: { type: Boolean, default: false },
+    data: {
+      workspaces: [{
+        id: { type: Number },
+        name: { type: String, default: '' },
+        description: { type: String, default: '' },
+        members: [{ type: String }],
+        createdAt: { type: Date, default: Date.now }
+      }],
+      discussions: [{
+        id: { type: Number },
+        title: { type: String, default: '' },
+        content: { type: String, default: '' },
+        author: { type: String, default: '' },
+        createdAt: { type: Date, default: Date.now },
+        replies: [{ type: mongoose.Schema.Types.Mixed }]
+      }],
+      mentorships: [{
+        id: { type: Number },
+        mentor: { type: String, default: '' },
+        mentee: { type: String, default: '' },
+        topic: { type: String, default: '' },
+        frequency: { type: String, enum: ['Weekly', 'Bi-weekly', 'Monthly', 'Quarterly', ''], default: 'Monthly' },
+        status: { type: String, enum: ['Active', 'Completed', 'On Hold', ''], default: 'Active' }
+      }],
+      knowledgeBase: [{
+        id: { type: Number },
+        title: { type: String, default: '' },
+        category: { type: String, enum: ['Process', 'Best Practice', 'Template', 'Guide', 'Reference', ''], default: 'Process' },
+        content: { type: String, default: '' },
+        createdAt: { type: Date, default: Date.now }
       }]
     }
   },
@@ -357,7 +490,7 @@ visionBoardSchema.pre('save', function(next) {
     'coreValues', 'bhag', 'vividDescription', 'swotAnalysis', 'strategicPriorities',
     'threeYearStrategy', 'smartGoals', 'quarterlyPlan', 'revenueModel',
     'organizationalStructure', 'sopRoadmap', 'automationSystems', 'kpiDashboard',
-    'riskManagement', 'strategySummary'];
+    'riskManagement', 'strategySummary', 'collaboration'];
 
   // Legacy sections progress
   const legacyCompleted = legacySectionNames.filter(

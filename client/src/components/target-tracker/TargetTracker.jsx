@@ -128,7 +128,15 @@ const TargetTracker = ({ visionBoardId }) => {
   // OKR handlers
   const handleAddOKR = async () => {
     if (!newOKR.objective.trim()) return;
-    const updatedOkrs = [...okrs, { ...newOKR, id: Date.now() }];
+    // Convert key results to objects with text and progress
+    const formattedOKR = {
+      ...newOKR,
+      id: Date.now(),
+      keyResults: newOKR.keyResults
+        .filter(kr => kr.trim())
+        .map(kr => ({ text: kr, progress: 0 }))
+    };
+    const updatedOkrs = [...okrs, formattedOKR];
     setOkrs(updatedOkrs);
     await saveSection('smartGoals', { goals: smartGoals, okrs: updatedOkrs, kpis });
     setShowOKRModal(false);
@@ -138,9 +146,11 @@ const TargetTracker = ({ visionBoardId }) => {
   const handleUpdateOKRProgress = async (index, keyResultIndex, progress) => {
     const updatedOkrs = okrs.map((okr, i) => {
       if (i === index) {
-        const newKeyResults = okr.keyResults.map((kr, j) =>
-          j === keyResultIndex ? { ...kr, progress } : kr
-        );
+        const newKeyResults = okr.keyResults.map((kr, j) => {
+          // Handle both string and object formats
+          const krText = typeof kr === 'string' ? kr : kr.text || kr;
+          return j === keyResultIndex ? { text: krText, progress } : (typeof kr === 'object' ? kr : { text: kr, progress: 0 });
+        });
         const avgProgress = newKeyResults.reduce((sum, kr) => sum + (kr.progress || 0), 0) / newKeyResults.length;
         return { ...okr, keyResults: newKeyResults, progress: Math.round(avgProgress) };
       }

@@ -17,12 +17,12 @@ const VisionBoardDetail = lazy(() => import('./pages/VisionBoardDetail'));
 const Progress = lazy(() => import('./pages/Progress'));
 const Admin = lazy(() => import('./pages/Admin'));
 const Modules = lazy(() => import('./pages/Modules'));
+const UserManagementPage = lazy(() => import('./pages/UserManagementPage'));
 
 // Lazy load heavier components
 const VisionBoardCreator = lazy(() => import('./components/visionboard/VisionBoardCreator'));
 const MonthlyUpdate = lazy(() => import('./components/progress/MonthlyUpdate'));
 const Settings = lazy(() => import('./components/settings/Settings'));
-const UserManagement = lazy(() => import('./components/admin/UserManagement'));
 
 // Loading component for Suspense fallback
 const PageLoader = () => (
@@ -54,12 +54,12 @@ const AppLayout = ({ children }) => {
 };
 
 // User Management Page Component
-const UserManagementPage = () => {
+const UserManagementRoute = () => {
   const { isAdmin } = useAuth();
   if (!isAdmin) {
     return <Navigate to="/dashboard" replace />;
   }
-  return <UserManagement />;
+  return <UserManagementPage />;
 };
 
 function App() {
@@ -167,7 +167,7 @@ function App() {
               element={
                 <ProtectedRoute adminOnly>
                   <AppLayout>
-                    <SuspenseWrapper><UserManagementPage /></SuspenseWrapper>
+                    <SuspenseWrapper><UserManagementRoute /></SuspenseWrapper>
                   </AppLayout>
                 </ProtectedRoute>
               }

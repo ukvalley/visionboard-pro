@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import ProgressBar from '../components/common/ProgressBar';
@@ -14,11 +14,22 @@ import { moduleConfigs, getModuleProgress, ModuleCard } from '../components/comm
 const VisionBoardDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [visionBoard, setVisionBoard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editingSection, setEditingSection] = useState(null);
-  const [activeTab, setActiveTab] = useState('vision'); // 'vision', 'strategy', 'visual'
+  const [activeTab, setActiveTab] = useState('vision');
   const [suggestions, setSuggestions] = useState([]);
+
+  // Update activeTab when URL query parameter changes
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'strategy' || tabParam === 'visual') {
+      setActiveTab(tabParam);
+    } else {
+      setActiveTab('vision');
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     fetchVisionBoard();
@@ -145,7 +156,14 @@ const VisionBoardDetail = () => {
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => {
+                setActiveTab(tab.id);
+                // Update URL with tab parameter
+                const url = tab.id === 'vision'
+                  ? `/visionboards/${id}`
+                  : `/visionboards/${id}?tab=${tab.id}`;
+                navigate(url, { replace: true });
+              }}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === tab.id
                   ? 'border-primary-500 text-primary-600 dark:text-primary-400'

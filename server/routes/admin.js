@@ -26,4 +26,22 @@ router.route('/analytics')
 router.route('/visionboards')
   .get(getAllVisionBoards);
 
+router.route('/users/:userId/visionboards')
+  .get(async (req, res) => {
+    try {
+      const VisionBoard = require('../models/VisionBoard');
+      const visionBoards = await VisionBoard.find({ userId: req.params.userId })
+        .sort({ createdAt: -1 });
+      res.json({
+        success: true,
+        data: visionBoards
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  });
+
 module.exports = router;

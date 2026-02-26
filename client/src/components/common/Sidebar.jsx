@@ -125,8 +125,16 @@ const Sidebar = () => {
         </p>
       )}
       {items.map((item) => {
-        const isActive = location.pathname === item.href ||
-          (item.href.includes('?') && location.pathname + location.search === item.href);
+        // More precise active state checking for query parameter URLs
+        let isActive = false;
+        if (item.href.includes('?')) {
+          // For URLs with query params, match exact URL
+          isActive = location.pathname + location.search === item.href;
+        } else {
+          // For URLs without query params, only match if no query params or tab=vision
+          const currentTab = new URLSearchParams(location.search).get('tab');
+          isActive = location.pathname === item.href && (!currentTab || currentTab === 'vision');
+        }
         return (
           <NavLink
             key={item.name}
@@ -274,7 +282,14 @@ const Sidebar = () => {
             ) : (
               <div className="space-y-1">
                 {moduleNavigation.map((item) => {
-                  const isActive = location.pathname === item.href;
+                  // More precise active state checking for query parameter URLs
+                  let isActive = false;
+                  if (item.href.includes('?')) {
+                    isActive = location.pathname + location.search === item.href;
+                  } else {
+                    const currentTab = new URLSearchParams(location.search).get('tab');
+                    isActive = location.pathname === item.href && (!currentTab || currentTab === 'vision');
+                  }
                   return (
                     <NavLink
                       key={item.name}
