@@ -6,6 +6,9 @@ import { ModuleEmptyState, QuickFillGuide } from '../common/ModuleCard';
 import visionBoardService from '../../services/visionBoardService';
 
 const CollaborationHub = ({ visionBoardId }) => {
+  const views = ['overview', 'workspaces', 'discussions', 'mentorship', 'knowledge', 'coach'];
+  const quickStartSteps = ['Overview', 'Workspaces', 'Discussions', 'Mentorship', 'Knowledge', 'AI Coach'];
+
   const [activeView, setActiveView] = useState('overview');
   const [visionBoard, setVisionBoard] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -13,7 +16,22 @@ const CollaborationHub = ({ visionBoardId }) => {
   const [userMessage, setUserMessage] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
 
-  const quickStartSteps = ['Overview', 'AI Coach', 'Tips'];
+  // Workspaces
+  const [workspaces, setWorkspaces] = useState([]);
+  const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
+  const [newWorkspace, setNewWorkspace] = useState({ name: '', description: '', members: [] });
+
+  // Discussions
+  const [discussions, setDiscussions] = useState([]);
+  const [newDiscussion, setNewDiscussion] = useState({ title: '', content: '', author: '' });
+
+  // Mentorship
+  const [mentorships, setMentorships] = useState([]);
+  const [newMentorship, setNewMentorship] = useState({ mentor: '', mentee: '', topic: '', frequency: 'Monthly' });
+
+  // Knowledge Base
+  const [knowledgeBase, setKnowledgeBase] = useState([]);
+  const [newArticle, setNewArticle] = useState({ title: '', category: 'Process', content: '' });
 
   useEffect(() => {
     if (visionBoardId) {
@@ -25,10 +43,30 @@ const CollaborationHub = ({ visionBoardId }) => {
     try {
       const response = await visionBoardService.getById(visionBoardId);
       setVisionBoard(response.data);
+
+      // Load collaboration data from strategySheet
+      const ss = response.data.strategySheet || {};
+      if (ss.collaboration?.data) {
+        setWorkspaces(ss.collaboration.data.workspaces || []);
+        setDiscussions(ss.collaboration.data.discussions || []);
+        setMentorships(ss.collaboration.data.mentorships || []);
+        setKnowledgeBase(ss.collaboration.data.knowledgeBase || []);
+      }
     } catch (error) {
       console.error('Failed to fetch vision board:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const saveCollaboration = async () => {
+    try {
+      await visionBoardService.updateSection(visionBoardId, 'collaboration', {
+        completed: true,
+        data: { workspaces, discussions, mentorships, knowledgeBase }
+      });
+    } catch (error) {
+      console.error('Failed to save:', error);
     }
   };
 
@@ -40,7 +78,6 @@ const CollaborationHub = ({ visionBoardId }) => {
     setUserMessage('');
     setAiLoading(true);
 
-    // Simulate AI response (in production, this would call an AI API)
     setTimeout(() => {
       const responses = {
         'strategy': 'Based on your vision board, I recommend focusing on your core differentiators first. What makes your business unique in the market?',
@@ -59,6 +96,39 @@ const CollaborationHub = ({ visionBoardId }) => {
     }, 1000);
   };
 
+  const handleAddWorkspace = async () => {
+    if (!newWorkspace.name.trim()) return;
+    const updated = [...workspaces, { ...newWorkspace, id: Date.now(), createdAt: new Date().toISOString() }];
+    setWorkspaces(updated);
+    await saveCollaboration();
+    setShowWorkspaceModal(false);
+    setNewWorkspace({ name: '', description: '', members: [] });
+  };
+
+  const handleAddDiscussion = async () => {
+    if (!newDiscussion.title.trim()) return;
+    const updated = [...discussions, { ...newDiscussion, id: Date.now(), createdAt: new Date().toISOString(), replies: [] }];
+    setDiscussions(updated);
+    await saveCollaboration();
+    setNewDiscussion({ title: '', content: '', author: '' });
+  };
+
+  const handleAddMentorship = async () => {
+    if (!newMentorship.mentor.trim() || !newMentorship.mentee.trim()) return;
+    const updated = [...mentorships, { ...newMentorship, id: Date.now(), status: 'Active' }];
+    setMentorships(updated);
+    await saveCollaboration();
+    setNewMentorship({ mentor: '', mentee: '', topic: '', frequency: 'Monthly' });
+  };
+
+  const handleAddArticle = async () => {
+    if (!newArticle.title.trim()) return;
+    const updated = [...knowledgeBase, { ...newArticle, id: Date.now(), createdAt: new Date().toISOString() }];
+    setKnowledgeBase(updated);
+    await saveCollaboration();
+    setNewArticle({ title: '', category: 'Process', content: '' });
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -72,16 +142,19 @@ const CollaborationHub = ({ visionBoardId }) => {
       {/* Quick Start Guide */}
       <QuickFillGuide
         steps={quickStartSteps}
-        currentStep={activeView === 'overview' ? 0 : activeView === 'coach' ? 1 : 2}
-        onStepClick={(idx) => setActiveView(idx === 0 ? 'overview' : idx === 1 ? 'coach' : 'tips')}
+        currentStep={views.indexOf(activeView)}
+        onStepClick={(idx) => setActiveView(views[idx])}
       />
 
       {/* Navigation Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-2">
         {[
           { id: 'overview', label: 'Overview', icon: '📋' },
-          { id: 'coach', label: 'AI Coach', icon: '🤖' },
-          { id: 'tips', label: 'Tips & Resources', icon: '💡' }
+          { id: 'workspaces', label: 'Workspaces', icon: '🏢' },
+          { id: 'discussions', label: 'Discussions', icon: '💬' },
+          { id: 'mentorship', label: 'Mentorship', icon: '👥' },
+          { id: 'knowledge', label: 'Knowledge Base', icon: '📚' },
+          { id: 'coach', label: 'AI Coach', icon: '🤖' }
         ].map(tab => (
           <button
             key={tab.id}
@@ -113,13 +186,13 @@ const CollaborationHub = ({ visionBoardId }) => {
             <div className="grid gap-4 md:grid-cols-2">
               <Card className="bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-900/20 dark:to-rose-900/20 border-pink-200 dark:border-pink-800">
                 <div className="flex items-center gap-3 mb-3">
-                  <span className="text-2xl">🤝</span>
+                  <span className="text-2xl">🏢</span>
                   <h4 className="font-semibold text-gray-900 dark:text-white">Shared Workspaces</h4>
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                  Create shared spaces for teams to collaborate on specific projects or initiatives.
+                  {workspaces.length} workspace{workspaces.length !== 1 ? 's' : ''} created
                 </p>
-                <Button variant="secondary" size="sm" disabled>Coming Soon</Button>
+                <Button variant="secondary" size="sm" onClick={() => setActiveView('workspaces')}>View Workspaces</Button>
               </Card>
 
               <Card className="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 border-purple-200 dark:border-purple-800">
@@ -128,9 +201,9 @@ const CollaborationHub = ({ visionBoardId }) => {
                   <h4 className="font-semibold text-gray-900 dark:text-white">Mentorship Programs</h4>
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                  Set up reverse mentoring relationships to transfer knowledge across your organization.
+                  {mentorships.length} active mentorship{mentorships.length !== 1 ? 's' : ''}
                 </p>
-                <Button variant="secondary" size="sm" disabled>Coming Soon</Button>
+                <Button variant="secondary" size="sm" onClick={() => setActiveView('mentorship')}>View Mentorships</Button>
               </Card>
 
               <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800">
@@ -139,9 +212,9 @@ const CollaborationHub = ({ visionBoardId }) => {
                   <h4 className="font-semibold text-gray-900 dark:text-white">Guided Discussions</h4>
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                  Structured discussion templates for strategic planning sessions.
+                  {discussions.length} discussion{discussions.length !== 1 ? 's' : ''} started
                 </p>
-                <Button variant="secondary" size="sm" disabled>Coming Soon</Button>
+                <Button variant="secondary" size="sm" onClick={() => setActiveView('discussions')}>View Discussions</Button>
               </Card>
 
               <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-800">
@@ -150,10 +223,215 @@ const CollaborationHub = ({ visionBoardId }) => {
                   <h4 className="font-semibold text-gray-900 dark:text-white">Knowledge Base</h4>
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                  Document and share best practices, processes, and learnings.
+                  {knowledgeBase.length} article{knowledgeBase.length !== 1 ? 's' : ''} documented
                 </p>
-                <Button variant="secondary" size="sm" disabled>Coming Soon</Button>
+                <Button variant="secondary" size="sm" onClick={() => setActiveView('knowledge')}>View Articles</Button>
               </Card>
+            </div>
+          </div>
+        )}
+
+        {/* Workspaces */}
+        {activeView === 'workspaces' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Shared Workspaces</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Create shared spaces for teams to collaborate on specific projects
+                </p>
+              </div>
+              <Button variant="primary" onClick={() => setShowWorkspaceModal(true)}>+ Add Workspace</Button>
+            </div>
+
+            {workspaces.length === 0 ? (
+              <ModuleEmptyState moduleName="Workspaces" onAction={() => setShowWorkspaceModal(true)} actionText="Create Your First Workspace" />
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2">
+                {workspaces.map((ws) => (
+                  <div key={ws.id} className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-semibold text-gray-900 dark:text-white">{ws.name}</h4>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{ws.description}</p>
+                        {ws.members?.length > 0 && (
+                          <div className="flex items-center gap-1 mt-2">
+                            <span className="text-xs text-gray-400">{ws.members.length} members</span>
+                          </div>
+                        )}
+                      </div>
+                      <button onClick={() => setWorkspaces(workspaces.filter(w => w.id !== ws.id))} className="text-gray-400 hover:text-red-500">✕</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Discussions */}
+        {activeView === 'discussions' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Guided Discussions</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Structured discussion templates for strategic planning sessions
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 mb-4">
+              <input
+                type="text"
+                className="input mb-2"
+                placeholder="Discussion title..."
+                value={newDiscussion.title}
+                onChange={(e) => setNewDiscussion({ ...newDiscussion, title: e.target.value })}
+              />
+              <textarea
+                className="input mb-2 min-h-[80px]"
+                placeholder="Start a discussion..."
+                value={newDiscussion.content}
+                onChange={(e) => setNewDiscussion({ ...newDiscussion, content: e.target.value })}
+              />
+              <div className="flex justify-between items-center">
+                <input
+                  type="text"
+                  className="input w-48"
+                  placeholder="Your name"
+                  value={newDiscussion.author}
+                  onChange={(e) => setNewDiscussion({ ...newDiscussion, author: e.target.value })}
+                />
+                <Button variant="primary" onClick={handleAddDiscussion}>Post Discussion</Button>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {discussions.map((disc) => (
+                <div key={disc.id} className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-900 dark:text-white">{disc.title}</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{disc.content}</p>
+                      <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
+                        <span>By {disc.author}</span>
+                        <span>{new Date(disc.createdAt).toLocaleDateString()}</span>
+                        {disc.replies?.length > 0 && <span>{disc.replies.length} replies</span>}
+                      </div>
+                    </div>
+                    <button onClick={() => setDiscussions(discussions.filter(d => d.id !== disc.id))} className="text-gray-400 hover:text-red-500">✕</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Mentorship */}
+        {activeView === 'mentorship' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Mentorship Programs</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Set up reverse mentoring relationships to transfer knowledge
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 mb-4">
+              <div className="grid grid-cols-2 gap-2 mb-2">
+                <input type="text" className="input" placeholder="Mentor name" value={newMentorship.mentor} onChange={(e) => setNewMentorship({ ...newMentorship, mentor: e.target.value })} />
+                <input type="text" className="input" placeholder="Mentee name" value={newMentorship.mentee} onChange={(e) => setNewMentorship({ ...newMentorship, mentee: e.target.value })} />
+              </div>
+              <div className="grid grid-cols-2 gap-2 mb-2">
+                <input type="text" className="input" placeholder="Topic/Skill" value={newMentorship.topic} onChange={(e) => setNewMentorship({ ...newMentorship, topic: e.target.value })} />
+                <select className="input" value={newMentorship.frequency} onChange={(e) => setNewMentorship({ ...newMentorship, frequency: e.target.value })}>
+                  <option>Weekly</option>
+                  <option>Bi-weekly</option>
+                  <option>Monthly</option>
+                  <option>Quarterly</option>
+                </select>
+              </div>
+              <Button variant="primary" onClick={handleAddMentorship}>Add Mentorship</Button>
+            </div>
+
+            <div className="space-y-3">
+              {mentorships.map((m) => (
+                <div key={m.id} className="flex items-center gap-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-gray-900 dark:text-white">{m.mentor}</span>
+                      <span className="text-gray-400">→</span>
+                      <span className="font-medium text-gray-900 dark:text-white">{m.mentee}</span>
+                    </div>
+                    <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
+                      <span>{m.topic}</span>
+                      <span>{m.frequency}</span>
+                      <span className={`px-2 py-0.5 rounded text-xs ${m.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>{m.status}</span>
+                    </div>
+                  </div>
+                  <button onClick={() => setMentorships(mentorships.filter(x => x.id !== m.id))} className="text-gray-400 hover:text-red-500">✕</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Knowledge Base */}
+        {activeView === 'knowledge' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Knowledge Base</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Document and share best practices, processes, and learnings
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 mb-4">
+              <input
+                type="text"
+                className="input mb-2"
+                placeholder="Article title..."
+                value={newArticle.title}
+                onChange={(e) => setNewArticle({ ...newArticle, title: e.target.value })}
+              />
+              <div className="flex gap-2 mb-2">
+                <select className="input w-40" value={newArticle.category} onChange={(e) => setNewArticle({ ...newArticle, category: e.target.value })}>
+                  <option>Process</option>
+                  <option>Best Practice</option>
+                  <option>Template</option>
+                  <option>Guide</option>
+                  <option>Reference</option>
+                </select>
+              </div>
+              <textarea
+                className="input mb-2 min-h-[100px]"
+                placeholder="Article content..."
+                value={newArticle.content}
+                onChange={(e) => setNewArticle({ ...newArticle, content: e.target.value })}
+              />
+              <Button variant="primary" onClick={handleAddArticle}>Add Article</Button>
+            </div>
+
+            <div className="space-y-3">
+              {knowledgeBase.map((article) => (
+                <div key={article.id} className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-semibold text-gray-900 dark:text-white">{article.title}</h4>
+                        <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded text-xs">{article.category}</span>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">{article.content}</p>
+                    </div>
+                    <button onClick={() => setKnowledgeBase(knowledgeBase.filter(a => a.id !== article.id))} className="text-gray-400 hover:text-red-500 ml-4">✕</button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -168,7 +446,6 @@ const CollaborationHub = ({ visionBoardId }) => {
               </p>
             </div>
 
-            {/* Chat Messages */}
             <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 min-h-[300px] max-h-[400px] overflow-y-auto">
               {aiMessages.length === 0 ? (
                 <div className="text-center py-8">
@@ -224,7 +501,6 @@ const CollaborationHub = ({ visionBoardId }) => {
               )}
             </div>
 
-            {/* Input */}
             <div className="flex gap-2">
               <input
                 type="text"
@@ -241,67 +517,27 @@ const CollaborationHub = ({ visionBoardId }) => {
             </div>
           </div>
         )}
-
-        {/* Tips & Resources */}
-        {activeView === 'tips' && (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Tips & Resources</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Best practices from the Scaling Up methodology
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <TipCard
-                icon="🎯"
-                title="The One-Page Strategic Plan"
-                description="Distill your strategy onto a single page. Include your mission, vision, values, BHAG, and key initiatives."
-              />
-              <TipCard
-                icon="📊"
-                title="Daily Huddles"
-                description="Hold 15-minute daily standups with each team. Ask: What's up? Any numbers? Where are you stuck?"
-              />
-              <TipCard
-                icon="⚡"
-                title="The Who-What-When"
-                description="Every meeting should end with clear action items: Who is doing What by When."
-              />
-              <TipCard
-                icon="👤"
-                title="FACe Chart"
-                description="Functional Accountability Chart - clarify who owns what function, not just job titles."
-              />
-              <TipCard
-                icon="📈"
-                title="Smart Numbers"
-                description="Identify 1-2 metrics that predict future success, not just track past performance."
-              />
-              <TipCard
-                icon="💰"
-                title="Cash Conversion Cycle"
-                description="Measure how quickly you turn a dollar invested into a dollar returned."
-              />
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Workspace Modal */}
+      <Modal isOpen={showWorkspaceModal} onClose={() => setShowWorkspaceModal(false)} title="Create Workspace">
+        <div className="space-y-4">
+          <div>
+            <label className="label">Workspace Name *</label>
+            <input type="text" className="input" value={newWorkspace.name} onChange={(e) => setNewWorkspace({ ...newWorkspace, name: e.target.value })} placeholder="e.g., Marketing Team" />
+          </div>
+          <div>
+            <label className="label">Description</label>
+            <textarea className="input min-h-[80px]" value={newWorkspace.description} onChange={(e) => setNewWorkspace({ ...newWorkspace, description: e.target.value })} placeholder="What is this workspace for?" />
+          </div>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button variant="secondary" onClick={() => setShowWorkspaceModal(false)}>Cancel</Button>
+            <Button variant="primary" onClick={handleAddWorkspace}>Create</Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
-
-// Tip Card Component
-const TipCard = ({ icon, title, description }) => (
-  <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
-    <div className="flex items-start gap-3">
-      <span className="text-2xl">{icon}</span>
-      <div>
-        <h4 className="font-semibold text-gray-900 dark:text-white mb-1">{title}</h4>
-        <p className="text-sm text-gray-600 dark:text-gray-400">{description}</p>
-      </div>
-    </div>
-  </div>
-);
 
 export default CollaborationHub;
