@@ -3,6 +3,7 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 import Modal from '../common/Modal';
 import { ModuleEmptyState } from '../common/ModuleCard';
+import ModuleHelpButton from '../common/ModuleHelpButton';
 import visionBoardService from '../../services/visionBoardService';
 
 const ExecutionRiskManager = ({ visionBoardId }) => {
@@ -239,6 +240,7 @@ const ExecutionRiskManager = ({ visionBoardId }) => {
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">Who-What-When Actions</h3>
+              <ModuleHelpButton guideKey="wwwActions" />
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Track action items with clear ownership and deadlines
                 </p>
@@ -282,6 +284,7 @@ const ExecutionRiskManager = ({ visionBoardId }) => {
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">Rockefeller Habits Checklist</h3>
+              <ModuleHelpButton guideKey="rockefellerHabits" />
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Core habits for scaling your business
                 </p>
@@ -358,6 +361,7 @@ const ExecutionRiskManager = ({ visionBoardId }) => {
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">Risk Matrix</h3>
+              <ModuleHelpButton guideKey="riskMatrix" />
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Identify and mitigate business risks
                 </p>

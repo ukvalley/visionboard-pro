@@ -3,6 +3,7 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 import Modal from '../common/Modal';
 import { ModuleEmptyState } from '../common/ModuleCard';
+import ModuleHelpButton from '../common/ModuleHelpButton';
 import visionBoardService from '../../services/visionBoardService';
 
 const ResourceManager = ({ visionBoardId }) => {
@@ -223,6 +224,7 @@ const ResourceManager = ({ visionBoardId }) => {
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">FACe Chart</h3>
+              <ModuleHelpButton guideKey="faceChart" />
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Functional Accountability Chart - Clarify who owns what function
                 </p>
@@ -278,6 +280,7 @@ const ResourceManager = ({ visionBoardId }) => {
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">PACe Chart</h3>
+              <ModuleHelpButton guideKey="paceChart" />
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Process Accountability Chart - Define who owns each process
                 </p>
@@ -401,6 +404,7 @@ const ResourceManager = ({ visionBoardId }) => {
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">9-Box Grid - Talent Assessment</h3>
+              <ModuleHelpButton guideKey="nineBoxGrid" />
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Assess team members on performance and potential
                 </p>

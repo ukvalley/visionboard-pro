@@ -3,6 +3,7 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 import Modal from '../common/Modal';
 import { ModuleEmptyState } from '../common/ModuleCard';
+import ModuleHelpButton from '../common/ModuleHelpButton';
 import visionBoardService from '../../services/visionBoardService';
 
 const TargetTracker = ({ visionBoardId }) => {
@@ -222,6 +223,7 @@ const TargetTracker = ({ visionBoardId }) => {
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">Objectives & Key Results</h3>
+              <ModuleHelpButton guideKey="okrs" />
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Set ambitious objectives with measurable key results
                 </p>
@@ -301,6 +303,7 @@ const TargetTracker = ({ visionBoardId }) => {
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">SMART Goals</h3>
+              <ModuleHelpButton guideKey="smartGoals" />
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Specific, Measurable, Achievable, Relevant, Time-bound goals
                 </p>
@@ -378,6 +381,7 @@ const TargetTracker = ({ visionBoardId }) => {
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">Quarterly Execution Plan</h3>
+              <ModuleHelpButton guideKey="quarterlyPlan" />
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Define your focus themes and key actions for each quarter
                 </p>
@@ -478,6 +482,7 @@ const TargetTracker = ({ visionBoardId }) => {
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">KPI Dashboard</h3>
+              <ModuleHelpButton guideKey="kpis" />
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Track key performance indicators in real-time
                 </p>

@@ -3,6 +3,7 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 import Modal from '../common/Modal';
 import { ModuleEmptyState } from '../common/ModuleCard';
+import ModuleHelpButton from '../common/ModuleHelpButton';
 import visionBoardService from '../../services/visionBoardService';
 
 const FinancialInsights = ({ visionBoardId }) => {
@@ -233,6 +234,7 @@ const FinancialInsights = ({ visionBoardId }) => {
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">FP&A Dashboard</h3>
+              <ModuleHelpButton guideKey="fpaDashboard" />
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Financial Planning & Analysis - Your financial health at a glance
                 </p>
@@ -276,6 +278,7 @@ const FinancialInsights = ({ visionBoardId }) => {
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">CASh Strategies</h3>
+              <ModuleHelpButton guideKey="cashStrategies" />
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Cash Acceleration Strategies to improve your cash flow
                 </p>
@@ -333,6 +336,7 @@ const FinancialInsights = ({ visionBoardId }) => {
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">Revenue Forecasting</h3>
+              <ModuleHelpButton guideKey="forecasting" />
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Project your revenue growth over the next 3 years
                 </p>
@@ -392,6 +396,7 @@ const FinancialInsights = ({ visionBoardId }) => {
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">ROI Calculator</h3>
+              <ModuleHelpButton guideKey="roiCalculator" />
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Calculate return on investment for initiatives
                 </p>

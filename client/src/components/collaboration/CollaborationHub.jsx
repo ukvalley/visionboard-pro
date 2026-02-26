@@ -3,6 +3,7 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 import Modal from '../common/Modal';
 import { ModuleEmptyState } from '../common/ModuleCard';
+import ModuleHelpButton from '../common/ModuleHelpButton';
 import visionBoardService from '../../services/visionBoardService';
 
 const CollaborationHub = ({ visionBoardId }) => {
@@ -229,6 +230,7 @@ const CollaborationHub = ({ visionBoardId }) => {
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">Shared Workspaces</h3>
+                <ModuleHelpButton guideKey="workspaces" />
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Create shared spaces for teams to collaborate on specific projects
                 </p>
@@ -326,6 +328,7 @@ const CollaborationHub = ({ visionBoardId }) => {
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">Mentorship Programs</h3>
+                <ModuleHelpButton guideKey="mentorship" />
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Set up reverse mentoring relationships to transfer knowledge
                 </p>
@@ -377,6 +380,7 @@ const CollaborationHub = ({ visionBoardId }) => {
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">Knowledge Base</h3>
+                <ModuleHelpButton guideKey="knowledgeBase" />
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Document and share best practices, processes, and learnings
                 </p>
@@ -433,6 +437,7 @@ const CollaborationHub = ({ visionBoardId }) => {
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-bold text-gray-900 dark:text-white">Ask Patrick - AI Business Coach</h3>
+                <ModuleHelpButton guideKey="aiCoach" />
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 Get guidance on implementing the Scaling Up methodology
               </p>
