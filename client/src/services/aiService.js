@@ -2,8 +2,25 @@ import api from './api';
 
 const aiService = {
   // Chat with AI assistant
-  chat: async (messages, context = {}) => {
-    const response = await api.post('/ai/chat', { messages, context });
+  chat: async (messages, context = {}, visionBoardId = null, saveHistory = false) => {
+    const response = await api.post('/ai/chat', {
+      messages,
+      context,
+      visionBoardId,
+      saveHistory
+    });
+    return response.data;
+  },
+
+  // Get chat history
+  getChatHistory: async (visionBoardId) => {
+    const response = await api.get(`/ai/chat-history/${visionBoardId}`);
+    return response.data;
+  },
+
+  // Clear chat history
+  clearChatHistory: async (visionBoardId) => {
+    const response = await api.delete(`/ai/chat-history/${visionBoardId}`);
     return response.data;
   },
 

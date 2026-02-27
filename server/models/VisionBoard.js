@@ -390,6 +390,11 @@ const strategySheetSchema = new mongoose.Schema({
         category: { type: String, enum: ['Process', 'Best Practice', 'Template', 'Guide', 'Reference', ''], default: 'Process' },
         content: { type: String, default: '' },
         createdAt: { type: Date, default: Date.now }
+      }],
+      chatHistory: [{
+        role: { type: String, enum: ['user', 'assistant', 'system'], required: true },
+        content: { type: String, required: true },
+        timestamp: { type: Date, default: Date.now }
       }]
     }
   },

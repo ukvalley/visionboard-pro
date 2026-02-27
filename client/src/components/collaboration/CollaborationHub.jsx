@@ -51,6 +51,13 @@ const CollaborationHub = ({ visionBoardId }) => {
         setDiscussions(ss.collaboration.data.discussions || []);
         setMentorships(ss.collaboration.data.mentorships || []);
         setKnowledgeBase(ss.collaboration.data.knowledgeBase || []);
+        // Load chat history
+        if (ss.collaboration.data.chatHistory && ss.collaboration.data.chatHistory.length > 0) {
+          setAiMessages(ss.collaboration.data.chatHistory.map(msg => ({
+            role: msg.role,
+            content: msg.content
+          })));
+        }
       }
     } catch (error) {
       console.error('Failed to fetch vision board:', error);
@@ -83,9 +90,9 @@ const CollaborationHub = ({ visionBoardId }) => {
     setAiLoading(true);
 
     try {
-      // Call real AI service
+      // Call real AI service with chat history saving
       const allMessages = [...aiMessages, userMsg];
-      const result = await aiService.chat(allMessages, { visionBoard });
+      const result = await aiService.chat(allMessages, { visionBoard }, visionBoardId, true);
 
       const aiMsg = {
         role: 'assistant',
@@ -101,6 +108,17 @@ const CollaborationHub = ({ visionBoardId }) => {
       setAiMessages(prev => [...prev, aiMsg]);
     } finally {
       setAiLoading(false);
+    }
+  };
+
+  const handleClearChat = async () => {
+    if (!window.confirm('Are you sure you want to clear all chat history?')) return;
+
+    try {
+      await aiService.clearChatHistory(visionBoardId);
+      setAiMessages([]);
+    } catch (error) {
+      console.error('Failed to clear chat history:', error);
     }
   };
 
@@ -460,12 +478,22 @@ const CollaborationHub = ({ visionBoardId }) => {
         {/* AI Coach */}
         {activeView === 'coach' && (
           <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Ask Patrick - AI Business Coach</h3>
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Ask Patrick - AI Business Coach</h3>
                 <ModuleHelpButton guideKey="aiCoach" />
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Get guidance on implementing the Scaling Up methodology
-              </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Get guidance on implementing the Scaling Up methodology
+                </p>
+              </div>
+              {aiMessages.length > 0 && (
+                <Button variant="ghost" size="sm" onClick={handleClearChat} className="text-gray-500 hover:text-red-500">
+                  <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Clear Chat
+                </Button>
+              )}
             </div>
 
             <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 min-h-[300px] max-h-[400px] overflow-y-auto">
