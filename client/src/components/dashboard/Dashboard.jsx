@@ -128,7 +128,7 @@ const Dashboard = () => {
         icon: '💡',
         title: 'Complete your Vision & Strategy foundation',
         action: 'Define Vision',
-        href: `/visionboards/${activeBoard._id}/modules?module=vision`
+        href: `/visionboards/${activeBoard._id}?tab=strategy`
       });
     }
 
@@ -353,7 +353,10 @@ const Dashboard = () => {
                   {insights.moduleScores.map((module) => (
                     <Link
                       key={module.id}
-                      to={`/visionboards/${activeBoard?._id}/modules?module=${module.id}`}
+                      to={module.id === 'vision'
+                        ? `/visionboards/${activeBoard?._id}?tab=strategy`
+                        : `/visionboards/${activeBoard?._id}/modules?module=${module.id}`
+                      }
                       className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
                     >
                       <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${module.color} flex items-center justify-center text-white text-lg`}>
@@ -488,7 +491,10 @@ const Dashboard = () => {
                       <p className="font-medium text-gray-900 dark:text-white">{insights.weakestModule.name}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">{insights.weakestModule.progress}% complete</p>
                       <Link
-                        to={`/visionboards/${activeBoard?._id}/modules?module=${insights.weakestModule.id}`}
+                        to={insights.weakestModule.id === 'vision'
+                          ? `/visionboards/${activeBoard?._id}?tab=strategy`
+                          : `/visionboards/${activeBoard?._id}/modules?module=${insights.weakestModule.id}`
+                        }
                         className="text-xs text-primary-600 dark:text-primary-400 hover:underline mt-1 inline-block"
                       >
                         Start improving →
@@ -507,7 +513,10 @@ const Dashboard = () => {
                     {insights.quickWins.slice(0, 4).map((win, idx) => (
                       <Link
                         key={idx}
-                        to={`/visionboards/${activeBoard?._id}/modules?module=${win.module}`}
+                        to={win.module === 'vision'
+                          ? `/visionboards/${activeBoard?._id}?tab=strategy`
+                          : `/visionboards/${activeBoard?._id}/modules?module=${win.module}`
+                        }
                         className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
                       >
                         <span className="w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-xs text-primary-600 dark:text-primary-400 font-medium">

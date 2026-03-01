@@ -140,7 +140,14 @@ const VisionBoardDetail = () => {
               module={module.id}
               progress={getModuleProgress(module.id, visionBoard)}
               visionBoardId={id}
-              onClick={() => navigate(`/visionboards/${id}/modules?module=${module.id}`)}
+              onClick={() => {
+                // Vision Board module goes to Strategy Sheet tab
+                if (module.id === 'vision') {
+                  navigate(`/visionboards/${id}?tab=strategy`);
+                } else {
+                  navigate(`/visionboards/${id}/modules?module=${module.id}`);
+                }
+              }}
             />
           ))}
         </div>

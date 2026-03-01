@@ -2,6 +2,18 @@
 
 export const moduleConfigs = [
   {
+    id: 'vision',
+    name: 'Vision Board',
+    shortName: 'Vision',
+    icon: '🎯',
+    description: 'Define your mission, vision, BHAG, core values, and strategic direction',
+    info: 'Set your company direction with Mission, Vision, Core Purpose, BHAG, Brand Promise, Core Values, and SWOT analysis.',
+    color: 'from-blue-500 to-indigo-600',
+    hrefBase: 'visionboard',
+    category: 'Planning',
+    features: ['Mission', 'Vision', 'BHAG', 'Core Values', 'SWOT']
+  },
+  {
     id: 'targets',
     name: 'Target Tracker',
     shortName: 'Targets',
@@ -101,6 +113,9 @@ export const getModuleProgress = (moduleId, visionBoard) => {
 
   // Module to strategySheet section mapping
   const moduleSectionMap = {
+    vision: {
+      sections: ['companyOverview', 'corePurpose', 'vision', 'mission', 'brandPromise', 'coreValues', 'bhag', 'vividDescription', 'swotAnalysis']
+    },
     targets: {
       sections: ['smartGoals', 'quarterlyPlan']
     },
