@@ -63,12 +63,6 @@ const Sidebar = () => {
       category: 'Planning'
     },
     {
-      name: 'Vision & Strategy',
-      href: `/visionboards/${activeVisionBoard}/modules?module=vision`,
-      icon: TargetIcon,
-      category: 'Planning'
-    },
-    {
       name: 'Target Tracker',
       href: `/visionboards/${activeVisionBoard}/modules?module=targets`,
       icon: ChartIcon,

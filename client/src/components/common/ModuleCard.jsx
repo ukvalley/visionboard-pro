@@ -2,18 +2,6 @@
 
 export const moduleConfigs = [
   {
-    id: 'vision',
-    name: 'Vision & Strategy',
-    shortName: 'Vision',
-    icon: '🎯',
-    description: 'Cascading goals, mission/vision statements, SWOT analysis, and 7 Strata planning framework',
-    info: 'Define your strategic direction with cascading goals that align your team. Start with your mission, create your vision, and use the SWOT analysis to identify opportunities and threats.',
-    color: 'from-blue-500 to-indigo-600',
-    hrefBase: 'modules',
-    category: 'Planning',
-    features: ['Cascading Goals', 'Mission/Vision', 'SWOT Analysis', '7 Strata', 'One-Page Plan']
-  },
-  {
     id: 'targets',
     name: 'Target Tracker',
     shortName: 'Targets',
@@ -113,9 +101,6 @@ export const getModuleProgress = (moduleId, visionBoard) => {
 
   // Module to strategySheet section mapping
   const moduleSectionMap = {
-    vision: {
-      sections: ['companyOverview', 'corePurpose', 'vision', 'mission', 'brandPromise', 'coreValues', 'bhag', 'vividDescription', 'swotAnalysis']
-    },
     targets: {
       sections: ['smartGoals', 'quarterlyPlan']
     },
@@ -129,7 +114,7 @@ export const getModuleProgress = (moduleId, visionBoard) => {
       sections: ['revenueModel', 'kpiDashboard']
     },
     collaboration: {
-      sections: [] // Uses overall progress
+      sections: ['collaboration']
     }
   };
 
