@@ -9,6 +9,7 @@ const Sidebar = () => {
   const { user, logout } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [activeVisionBoard, setActiveVisionBoard] = useState(null);
   const [visionBoards, setVisionBoards] = useState([]);
   const [showVisionBoardDropdown, setShowVisionBoardDropdown] = useState(false);
@@ -30,6 +31,22 @@ const Sidebar = () => {
       setActiveVisionBoard(vbId);
     }
   }, [location.pathname, visionBoards]);
+
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
+
+  // Close mobile sidebar on window resize to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setMobileOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const fetchVisionBoards = async () => {
     try {
@@ -109,6 +126,13 @@ const Sidebar = () => {
     setActiveVisionBoard(vbId);
     setShowVisionBoardDropdown(false);
     navigate(`/visionboards/${vbId}`);
+    setMobileOpen(false);
+  };
+
+  const handleNavClick = () => {
+    if (window.innerWidth < 768) {
+      setMobileOpen(false);
+    }
   };
 
   const renderNavSection = (items, title = null) => (
@@ -133,6 +157,7 @@ const Sidebar = () => {
           <NavLink
             key={item.name}
             to={item.href}
+            onClick={handleNavClick}
             className={classNames(
               'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group',
               isActive
@@ -142,7 +167,7 @@ const Sidebar = () => {
             title={collapsed ? item.name : undefined}
           >
             <item.icon className={classNames('w-5 h-5 flex-shrink-0', isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300')} />
-            {!collapsed && <span className="font-medium text-sm">{item.name}</span>}
+            {(!collapsed || mobileOpen) && <span className="font-medium text-sm">{item.name}</span>}
           </NavLink>
         );
       })}
@@ -150,244 +175,298 @@ const Sidebar = () => {
   );
 
   return (
-    <aside
-      className={classNames(
-        'fixed left-0 top-0 z-40 h-screen transition-all duration-300 flex flex-col',
-        collapsed ? 'w-20' : 'w-72',
-        'bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800'
-      )}
-    >
-      {/* Logo */}
-      <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-primary-600 to-indigo-600">
-        {!collapsed && (
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <>
+      {/* Mobile Header */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+        <div className="flex items-center justify-between h-16 px-4">
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+          >
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-indigo-600 rounded-lg flex items-center justify-center">
+              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
-            <div>
-              <span className="font-bold text-white text-lg">VisionBoard</span>
-              <span className="text-white/70 text-xs block -mt-1">Pro</span>
-            </div>
+            <span className="font-bold text-gray-900 dark:text-white">VisionBoard Pro</span>
           </div>
-        )}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="p-2 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors"
-        >
-          <svg className={classNames('w-5 h-5 transition-transform', collapsed && 'rotate-180')} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-          </svg>
-        </button>
+          <div className="w-10" /> {/* Spacer for balance */}
+        </div>
       </div>
 
-      {/* Vision Board Selector */}
-      {!collapsed && visionBoards.length > 0 && (
-        <div className="px-3 py-3 border-b border-gray-200 dark:border-gray-800">
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 px-1">Active Vision Board</p>
-          <div className="relative">
-            <button
-              onClick={() => setShowVisionBoardDropdown(!showVisionBoardDropdown)}
-              className="w-full flex items-center justify-between px-3 py-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            >
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-400 to-indigo-500 flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">
-                    {visionBoards.find(vb => vb._id === activeVisionBoard)?.name?.charAt(0) || 'V'}
+      {/* Mobile Overlay */}
+      {mobileOpen && (
+        <div
+          className="md:hidden fixed inset-0 z-40 bg-black/50"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={classNames(
+          'fixed left-0 top-0 z-40 h-screen transition-all duration-300 flex flex-col',
+          'bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800',
+          // Mobile: slide in/out
+          'transform md:transform-none',
+          mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
+          // Desktop: collapsed state
+          collapsed ? 'md:w-20' : 'md:w-72',
+          // Mobile: full width
+          'w-72'
+        )}
+      >
+        {/* Logo */}
+        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-primary-600 to-indigo-600">
+          {(!collapsed || mobileOpen) && (
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div>
+                <span className="font-bold text-white text-lg">VisionBoard</span>
+                <span className="text-white/70 text-xs block -mt-1">Pro</span>
+              </div>
+            </div>
+          )}
+          {/* Mobile close button */}
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="md:hidden p-2 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          {/* Desktop collapse button */}
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="hidden md:flex p-2 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <svg className={classNames('w-5 h-5 transition-transform', collapsed && 'rotate-180')} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Vision Board Selector */}
+        {(!collapsed || mobileOpen) && visionBoards.length > 0 && (
+          <div className="px-3 py-3 border-b border-gray-200 dark:border-gray-800">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 px-1">Active Vision Board</p>
+            <div className="relative">
+              <button
+                onClick={() => setShowVisionBoardDropdown(!showVisionBoardDropdown)}
+                className="w-full flex items-center justify-between px-3 py-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-400 to-indigo-500 flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">
+                      {visionBoards.find(vb => vb._id === activeVisionBoard)?.name?.charAt(0) || 'V'}
+                    </span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
+                    {visionBoards.find(vb => vb._id === activeVisionBoard)?.name || 'Select Board'}
                   </span>
                 </div>
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
-                  {visionBoards.find(vb => vb._id === activeVisionBoard)?.name || 'Select Board'}
-                </span>
-              </div>
-              <svg className={classNames('w-4 h-4 text-gray-400 transition-transform', showVisionBoardDropdown && 'rotate-180')} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+                <svg className={classNames('w-4 h-4 text-gray-400 transition-transform', showVisionBoardDropdown && 'rotate-180')} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
 
-            {showVisionBoardDropdown && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden z-50">
-                {visionBoards.map(vb => (
-                  <button
-                    key={vb._id}
-                    onClick={() => handleVisionBoardSelect(vb._id)}
-                    className={classNames(
-                      'w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors',
-                      vb._id === activeVisionBoard && 'bg-primary-50 dark:bg-primary-900/20'
-                    )}
-                  >
-                    <div className="w-6 h-6 rounded bg-gradient-to-br from-primary-400 to-indigo-500 flex items-center justify-center">
-                      <span className="text-white text-xs font-bold">{vb.name.charAt(0)}</span>
-                    </div>
-                    <span className="text-sm text-gray-700 dark:text-gray-300">{vb.name}</span>
-                    {vb._id === activeVisionBoard && (
-                      <svg className="w-4 h-4 text-primary-500 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </button>
-                ))}
-                <div className="border-t border-gray-200 dark:border-gray-700">
-                  <NavLink
-                    to="/visionboards/new"
-                    className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-primary-600 dark:text-primary-400"
-                    onClick={() => setShowVisionBoardDropdown(false)}
-                  >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                    <span className="text-sm font-medium">Create New Board</span>
-                  </NavLink>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-6 overflow-y-auto">
-        {/* Core */}
-        {renderNavSection(coreNavigation)}
-
-        {/* Modules (grouped by category) */}
-        {moduleNavigation.length > 0 && (
-          <>
-            {!collapsed ? (
-              <>
-                {renderNavSection(
-                  moduleNavigation.filter(m => m.category === 'Planning'),
-                  'Planning'
-                )}
-                {renderNavSection(
-                  moduleNavigation.filter(m => m.category === 'Execution'),
-                  'Execution'
-                )}
-                {renderNavSection(
-                  moduleNavigation.filter(m => m.category === 'People'),
-                  'People'
-                )}
-                {renderNavSection(
-                  moduleNavigation.filter(m => m.category === 'Analytics'),
-                  'Analytics'
-                )}
-              </>
-            ) : (
-              <div className="space-y-1">
-                {moduleNavigation.map((item) => {
-                  // More precise active state checking for query parameter URLs
-                  let isActive = false;
-                  if (item.href.includes('?')) {
-                    isActive = location.pathname + location.search === item.href;
-                  } else {
-                    const currentTab = new URLSearchParams(location.search).get('tab');
-                    isActive = location.pathname === item.href && (!currentTab || currentTab === 'vision');
-                  }
-                  return (
-                    <NavLink
-                      key={item.name}
-                      to={item.href}
+              {showVisionBoardDropdown && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden z-50">
+                  {visionBoards.map(vb => (
+                    <button
+                      key={vb._id}
+                      onClick={() => handleVisionBoardSelect(vb._id)}
                       className={classNames(
-                        'flex items-center justify-center p-2.5 rounded-xl transition-all group',
-                        isActive
-                          ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg'
-                          : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
+                        'w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors',
+                        vb._id === activeVisionBoard && 'bg-primary-50 dark:bg-primary-900/20'
                       )}
-                      title={item.name}
                     >
-                      <item.icon className="w-5 h-5" />
+                      <div className="w-6 h-6 rounded bg-gradient-to-br from-primary-400 to-indigo-500 flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">{vb.name.charAt(0)}</span>
+                      </div>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{vb.name}</span>
+                      {vb._id === activeVisionBoard && (
+                        <svg className="w-4 h-4 text-primary-500 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </button>
+                  ))}
+                  <div className="border-t border-gray-200 dark:border-gray-700">
+                    <NavLink
+                      to="/visionboards/new"
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-primary-600 dark:text-primary-400"
+                      onClick={() => {
+                        setShowVisionBoardDropdown(false);
+                        setMobileOpen(false);
+                      }}
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      <span className="text-sm font-medium">Create New Board</span>
                     </NavLink>
-                  );
-                })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Navigation */}
+        <nav className="flex-1 px-3 py-4 space-y-6 overflow-y-auto">
+          {/* Core */}
+          {renderNavSection(coreNavigation)}
+
+          {/* Modules (grouped by category) */}
+          {moduleNavigation.length > 0 && (
+            <>
+              {!collapsed || mobileOpen ? (
+                <>
+                  {renderNavSection(
+                    moduleNavigation.filter(m => m.category === 'Planning'),
+                    'Planning'
+                  )}
+                  {renderNavSection(
+                    moduleNavigation.filter(m => m.category === 'Execution'),
+                    'Execution'
+                  )}
+                  {renderNavSection(
+                    moduleNavigation.filter(m => m.category === 'People'),
+                    'People'
+                  )}
+                  {renderNavSection(
+                    moduleNavigation.filter(m => m.category === 'Analytics'),
+                    'Analytics'
+                  )}
+                </>
+              ) : (
+                <div className="space-y-1">
+                  {moduleNavigation.map((item) => {
+                    // More precise active state checking for query parameter URLs
+                    let isActive = false;
+                    if (item.href.includes('?')) {
+                      isActive = location.pathname + location.search === item.href;
+                    } else {
+                      const currentTab = new URLSearchParams(location.search).get('tab');
+                      isActive = location.pathname === item.href && (!currentTab || currentTab === 'vision');
+                    }
+                    return (
+                      <NavLink
+                        key={item.name}
+                        to={item.href}
+                        onClick={handleNavClick}
+                        className={classNames(
+                          'flex items-center justify-center p-2.5 rounded-xl transition-all group',
+                          isActive
+                            ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg'
+                            : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
+                        )}
+                        title={item.name}
+                      >
+                        <item.icon className="w-5 h-5" />
+                      </NavLink>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Admin */}
+          {adminNavigation.length > 0 && (
+            <div className="pt-4 border-t border-gray-200 dark:border-gray-800">
+              {renderNavSection(adminNavigation, (collapsed && !mobileOpen) ? null : 'Administration')}
+            </div>
+          )}
+        </nav>
+
+        {/* Quick Stats */}
+        {(!collapsed || mobileOpen) && activeVisionBoard && (
+          <div className="px-4 py-3 mx-3 mb-2 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-800/50 rounded-xl">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Module Status</p>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="text-center">
+                <p className="text-lg font-bold text-primary-600 dark:text-primary-400">6</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Modules</p>
               </div>
+              <div className="text-center">
+                <p className="text-lg font-bold text-green-600 dark:text-green-400">Active</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Status</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Theme Toggle */}
+        <div className="px-3 py-2">
+          <button
+            onClick={toggleTheme}
+            className={classNames(
+              'flex items-center gap-3 w-full px-3 py-2.5 rounded-xl transition-all',
+              'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
             )}
-          </>
-        )}
-
-        {/* Admin */}
-        {adminNavigation.length > 0 && (
-          <div className="pt-4 border-t border-gray-200 dark:border-gray-800">
-            {renderNavSection(adminNavigation, collapsed ? null : 'Administration')}
-          </div>
-        )}
-      </nav>
-
-      {/* Quick Stats */}
-      {!collapsed && activeVisionBoard && (
-        <div className="px-4 py-3 mx-3 mb-2 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-800/50 rounded-xl">
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Module Status</p>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="text-center">
-              <p className="text-lg font-bold text-primary-600 dark:text-primary-400">8</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Modules</p>
-            </div>
-            <div className="text-center">
-              <p className="text-lg font-bold text-green-600 dark:text-green-400">Active</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Status</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Theme Toggle */}
-      <div className="px-3 py-2">
-        <button
-          onClick={toggleTheme}
-          className={classNames(
-            'flex items-center gap-3 w-full px-3 py-2.5 rounded-xl transition-all',
-            'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
-          )}
-        >
-          {isDark ? (
-            <svg className="w-5 h-5 flex-shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-          ) : (
-            <svg className="w-5 h-5 flex-shrink-0 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-            </svg>
-          )}
-          {!collapsed && <span className="font-medium text-sm">{isDark ? 'Light Mode' : 'Dark Mode'}</span>}
-        </button>
-      </div>
-
-      {/* Settings */}
-      <div className="px-3 pb-2">
-        {renderNavSection(settingsNavigation)}
-      </div>
-
-      {/* User Profile */}
-      <div className="px-3 py-3 border-t border-gray-200 dark:border-gray-800">
-        <div className={classNames('flex items-center', collapsed ? 'justify-center' : 'gap-3')}>
-          <div className="w-10 h-10 bg-gradient-to-br from-primary-400 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/25">
-            <span className="text-sm font-bold text-white">
-              {getInitials(user?.name)}
-            </span>
-          </div>
-          {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                {user?.name}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                {user?.email}
-              </p>
-            </div>
-          )}
-          {!collapsed && (
-            <button
-              onClick={logout}
-              className="p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          >
+            {isDark ? (
+              <svg className="w-5 h-5 flex-shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
-            </button>
-          )}
+            ) : (
+              <svg className="w-5 h-5 flex-shrink-0 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+            )}
+            {(!collapsed || mobileOpen) && <span className="font-medium text-sm">{isDark ? 'Light Mode' : 'Dark Mode'}</span>}
+          </button>
         </div>
-      </div>
-    </aside>
+
+        {/* Settings */}
+        <div className="px-3 pb-2">
+          {renderNavSection(settingsNavigation)}
+        </div>
+
+        {/* User Profile */}
+        <div className="px-3 py-3 border-t border-gray-200 dark:border-gray-800">
+          <div className={classNames('flex items-center', (collapsed && !mobileOpen) ? 'justify-center' : 'gap-3')}>
+            <div className="w-10 h-10 bg-gradient-to-br from-primary-400 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/25">
+              <span className="text-sm font-bold text-white">
+                {getInitials(user?.name)}
+              </span>
+            </div>
+            {(!collapsed || mobileOpen) && (
+              <>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                    {user?.name}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    {user?.email}
+                  </p>
+                </div>
+                <button
+                  onClick={logout}
+                  className="p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </aside>
+    </>
   );
 };
 
