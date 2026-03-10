@@ -11,6 +11,63 @@ import { formatDate, sectionNames } from '../utils/helpers';
 import visionBoardService from '../services/visionBoardService';
 import { moduleConfigs, getModuleProgress, ModuleCard } from '../components/common/ModuleCard';
 
+// Field definitions for each section (used when section.data is empty)
+const sectionFieldDefs = {
+  businessOverview: {
+    businessName: { type: 'text', label: 'Business Name' },
+    industry: { type: 'text', label: 'Industry' },
+    targetMarket: { type: 'text', label: 'Target Market' },
+    visionStatement: { type: 'textarea', label: 'Vision Statement' },
+    missionStatement: { type: 'textarea', label: 'Mission Statement' }
+  },
+  financialGoals: {
+    annualRevenue: { type: 'number', label: 'Annual Revenue Target' },
+    monthlyRevenue: { type: 'number', label: 'Monthly Revenue Target' },
+    profitMargin: { type: 'number', label: 'Profit Margin %' },
+    personalIncome: { type: 'number', label: 'Personal Income Goal' },
+    cashReserve: { type: 'number', label: 'Cash Reserve Target' }
+  },
+  growthStrategy: {
+    primaryRevenueSources: { type: 'text', label: 'Primary Revenue Sources' },
+    targetCustomerSegments: { type: 'text', label: 'Target Customer Segments' },
+    highValueClients: { type: 'text', label: 'High-Value Clients' },
+    growthChannels: { type: 'text', label: 'Growth Channels' }
+  },
+  productService: {
+    currentServices: { type: 'textarea', label: 'Current Services/Products' },
+    futureProducts: { type: 'textarea', label: 'Future Products/Services' },
+    pricingStrategy: { type: 'text', label: 'Pricing Strategy' },
+    competitiveAdvantage: { type: 'textarea', label: 'Competitive Advantage' }
+  },
+  systemsToBuild: {
+    crmSystem: { type: 'text', label: 'CRM System Status' },
+    salesFunnel: { type: 'text', label: 'Sales Funnel Status' },
+    operations: { type: 'text', label: 'Operations System Status' },
+    financialTracking: { type: 'text', label: 'Financial Tracking Status' },
+    marketingAutomation: { type: 'text', label: 'Marketing Automation Status' }
+  },
+  teamPlan: {
+    currentTeam: { type: 'textarea', label: 'Current Team Members' },
+    futureHires: { type: 'textarea', label: 'Future Hires Needed' },
+    organizationalStructure: { type: 'textarea', label: 'Organizational Structure' },
+    teamCulture: { type: 'text', label: 'Team Culture Values' }
+  },
+  brandGoals: {
+    websiteLeads: { type: 'number', label: 'Website Leads/Month' },
+    socialFollowers: { type: 'number', label: 'Social Media Followers' },
+    caseStudies: { type: 'number', label: 'Case Studies Goal' },
+    speakingEvents: { type: 'text', label: 'Speaking/Events Goals' },
+    brandAwareness: { type: 'text', label: 'Brand Awareness Goals' }
+  },
+  lifestyleVision: {
+    workingHours: { type: 'number', label: 'Working Hours/Day' },
+    freeDays: { type: 'number', label: 'Free Days/Month' },
+    travelGoals: { type: 'textarea', label: 'Travel Goals' },
+    netWorthTarget: { type: 'number', label: 'Net Worth Target' },
+    personalGoals: { type: 'textarea', label: 'Personal Goals' }
+  }
+};
+
 const VisionBoardDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -241,10 +298,29 @@ const VisionBoardDetail = () => {
 
 // Section Card Component
 const SectionCard = ({ sectionKey, section, onEdit, onSave, isEditing, onCancel }) => {
-  const [editData, setEditData] = useState(section.data || {});
+  // Get field definitions for this section, or use section.data if available
+  const fieldDefs = sectionFieldDefs[sectionKey] || {};
+  const hasData = section.data && Object.keys(section.data).length > 0;
+
+  // Merge field definitions with actual data (field defs as fallback)
+  const fieldsToShow = hasData
+    ? section.data
+    : Object.keys(fieldDefs).reduce((acc, key) => {
+        acc[key] = fieldDefs[key].type === 'number' ? 0 : '';
+        return acc;
+      }, {});
+
+  const [editData, setEditData] = useState(hasData ? (section.data || {}) : fieldsToShow);
+
+  // Reset editData when entering edit mode with empty data
+  useEffect(() => {
+    if (isEditing && !hasData) {
+      setEditData(fieldsToShow);
+    }
+  }, [isEditing, hasData]);
 
   const renderFieldValue = (value) => {
-    if (!value) return <span className="text-gray-400">Not set</span>;
+    if (!value && value !== 0) return <span className="text-gray-400">Not set</span>;
     if (typeof value === 'number') {
       if (sectionKey === 'financialGoals') {
         return `$${value.toLocaleString()}`;
@@ -260,6 +336,24 @@ const SectionCard = ({ sectionKey, section, onEdit, onSave, isEditing, onCancel 
       ));
     }
     return String(value);
+  };
+
+  const getFieldLabel = (field) => {
+    if (fieldDefs[field]?.label) {
+      return fieldDefs[field].label;
+    }
+    return field.replace(/([A-Z])/g, ' $1').trim();
+  };
+
+  const getFieldType = (field) => {
+    if (fieldDefs[field]?.type) {
+      return fieldDefs[field].type;
+    }
+    // Infer type from value
+    const value = editData[field];
+    if (typeof value === 'number') return 'number';
+    if (typeof value === 'string' && value.length > 50) return 'textarea';
+    return 'text';
   };
 
   return (
@@ -288,34 +382,42 @@ const SectionCard = ({ sectionKey, section, onEdit, onSave, isEditing, onCancel 
 
       {isEditing ? (
         <div className="space-y-4">
-          {Object.entries(section.data || {}).map(([field, value]) => (
-            <div key={field}>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 capitalize">
-                {field.replace(/([A-Z])/g, ' $1').trim()}
-              </label>
-              {typeof value === 'string' && value.length > 50 ? (
-                <textarea
-                  className="input min-h-[80px]"
-                  value={editData[field] || ''}
-                  onChange={(e) => setEditData(prev => ({ ...prev, [field]: e.target.value }))}
-                />
-              ) : typeof value === 'number' ? (
-                <input
-                  type="number"
-                  className="input"
-                  value={editData[field] || ''}
-                  onChange={(e) => setEditData(prev => ({ ...prev, [field]: parseFloat(e.target.value) || 0 }))}
-                />
-              ) : (
-                <input
-                  type="text"
-                  className="input"
-                  value={editData[field] || ''}
-                  onChange={(e) => setEditData(prev => ({ ...prev, [field]: e.target.value }))}
-                />
-              )}
-            </div>
-          ))}
+          {Object.entries(fieldsToShow).map(([field, defaultValue]) => {
+            const fieldType = getFieldType(field);
+            const value = editData[field] ?? (fieldType === 'number' ? 0 : '');
+
+            return (
+              <div key={field}>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  {getFieldLabel(field)}
+                </label>
+                {fieldType === 'textarea' ? (
+                  <textarea
+                    className="input min-h-[80px]"
+                    value={value}
+                    onChange={(e) => setEditData(prev => ({ ...prev, [field]: e.target.value }))}
+                    placeholder={`Enter ${getFieldLabel(field).toLowerCase()}...`}
+                  />
+                ) : fieldType === 'number' ? (
+                  <input
+                    type="number"
+                    className="input"
+                    value={value}
+                    onChange={(e) => setEditData(prev => ({ ...prev, [field]: parseFloat(e.target.value) || 0 }))}
+                    placeholder="0"
+                  />
+                ) : (
+                  <input
+                    type="text"
+                    className="input"
+                    value={value}
+                    onChange={(e) => setEditData(prev => ({ ...prev, [field]: e.target.value }))}
+                    placeholder={`Enter ${getFieldLabel(field).toLowerCase()}...`}
+                  />
+                )}
+              </div>
+            );
+          })}
           <div className="flex justify-end gap-2">
             <Button variant="secondary" size="sm" onClick={onCancel}>
               Cancel
@@ -327,17 +429,17 @@ const SectionCard = ({ sectionKey, section, onEdit, onSave, isEditing, onCancel 
         </div>
       ) : (
         <div className="space-y-2">
-          {Object.entries(section.data || {}).slice(0, 4).map(([field, value]) => (
+          {Object.entries(fieldsToShow).slice(0, 4).map(([field, value]) => (
             <div key={field} className="flex justify-between">
-              <span className="text-sm text-gray-500 dark:text-gray-400 capitalize">
-                {field.replace(/([A-Z])/g, ' $1').trim()}:
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {getFieldLabel(field)}:
               </span>
               <span className="text-sm text-gray-900 dark:text-white text-right max-w-[60%]">
-                {renderFieldValue(value)}
+                {hasData ? renderFieldValue(value) : <span className="text-gray-400">Not set</span>}
               </span>
             </div>
           ))}
-          {Object.keys(section.data || {}).length === 0 && (
+          {!hasData && (
             <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-4">
               No data yet. Click edit to add information.
             </p>
