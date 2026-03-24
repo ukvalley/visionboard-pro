@@ -6,11 +6,17 @@ import generatePDF from '../../utils/pdfGenerator';
 const ExportOptions = ({ visionBoard }) => {
   const [showModal, setShowModal] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [exportType, setExportType] = useState('full');
 
-  const handleExportPDF = async () => {
+  const handleExportPDF = async (type = 'full') => {
     setExporting(true);
+    setExportType(type);
     try {
-      await generatePDF(visionBoard);
+      const options = {
+        includeStrategySheet: true,
+        onePageSummary: type === 'summary'
+      };
+      await generatePDF(visionBoard, options);
     } catch (error) {
       alert('Failed to generate PDF');
     } finally {
@@ -24,6 +30,8 @@ const ExportOptions = ({ visionBoard }) => {
     navigator.clipboard.writeText(shareUrl);
     alert('Share link copied to clipboard!');
   };
+
+  const hasStrategySheet = visionBoard.strategySheet && Object.keys(visionBoard.strategySheet).length > 0;
 
   return (
     <>
@@ -41,7 +49,37 @@ const ExportOptions = ({ visionBoard }) => {
         size="md"
       >
         <div className="space-y-4">
-          {/* PDF Export */}
+          {/* One-Page Strategy Summary */}
+          {hasStrategySheet && (
+            <div className="p-4 border-2 border-primary-200 dark:border-primary-800 bg-primary-50/50 dark:bg-primary-900/10 rounded-lg">
+              <div className="flex items-start gap-4">
+                <div className="p-2 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-lg">
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="font-medium text-gray-900 dark:text-white">One-Page Strategy Summary</h4>
+                    <span className="px-2 py-0.5 text-xs font-medium bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300 rounded-full">Recommended</span>
+                  </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                    A concise single-page summary of your vision, mission, BHAG, values, and strategic priorities.
+                  </p>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    loading={exporting && exportType === 'summary'}
+                    onClick={() => handleExportPDF('summary')}
+                  >
+                    Export One-Page Summary
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Full PDF Export */}
           <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
             <div className="flex items-start gap-4">
               <div className="p-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg">
@@ -50,17 +88,17 @@ const ExportOptions = ({ visionBoard }) => {
                 </svg>
               </div>
               <div className="flex-1">
-                <h4 className="font-medium text-gray-900 dark:text-white">Export as PDF</h4>
+                <h4 className="font-medium text-gray-900 dark:text-white">Full Export</h4>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                  Download a beautifully formatted PDF of your vision board.
+                  Download a detailed PDF with all sections including Vision Board and Strategy Sheet data.
                 </p>
                 <Button
-                  variant="primary"
+                  variant="secondary"
                   size="sm"
-                  loading={exporting}
-                  onClick={handleExportPDF}
+                  loading={exporting && exportType === 'full'}
+                  onClick={() => handleExportPDF('full')}
                 >
-                  Download PDF
+                  Download Full PDF
                 </Button>
               </div>
             </div>
