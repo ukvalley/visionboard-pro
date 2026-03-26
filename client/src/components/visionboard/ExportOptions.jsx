@@ -9,6 +9,11 @@ const ExportOptions = ({ visionBoard }) => {
   const [exportType, setExportType] = useState('full');
 
   const handleExportPDF = async (type = 'full') => {
+    if (!visionBoard) {
+      alert('No vision board data available. Please try again.');
+      return;
+    }
+
     setExporting(true);
     setExportType(type);
     try {
@@ -18,7 +23,8 @@ const ExportOptions = ({ visionBoard }) => {
       };
       await generatePDF(visionBoard, options);
     } catch (error) {
-      alert('Failed to generate PDF');
+      console.error('Export error:', error);
+      alert('Failed to generate PDF. Please check if popups are allowed.');
     } finally {
       setExporting(false);
       setShowModal(false);
@@ -26,12 +32,16 @@ const ExportOptions = ({ visionBoard }) => {
   };
 
   const handleShare = () => {
+    if (!visionBoard || !visionBoard._id) {
+      alert('Cannot generate share link. Vision board not found.');
+      return;
+    }
     const shareUrl = `${window.location.origin}/visionboards/${visionBoard._id}/share`;
     navigator.clipboard.writeText(shareUrl);
     alert('Share link copied to clipboard!');
   };
 
-  const hasStrategySheet = visionBoard.strategySheet && Object.keys(visionBoard.strategySheet).length > 0;
+  const hasStrategySheet = visionBoard?.strategySheet && Object.keys(visionBoard.strategySheet).length > 0;
 
   return (
     <>
