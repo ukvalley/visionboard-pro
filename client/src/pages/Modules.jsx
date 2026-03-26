@@ -1,5 +1,5 @@
 import { useState, lazy, Suspense, useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
@@ -7,7 +7,6 @@ import { moduleConfigs, ModuleInfoBanner, getModuleProgress } from '../component
 import visionBoardService from '../services/visionBoardService';
 
 // Lazy load modules for code-splitting
-const VisionStrategyManager = lazy(() => import('../components/vision-strategy/VisionStrategyManager'));
 const TargetTracker = lazy(() => import('../components/target-tracker/TargetTracker'));
 const ResourceManager = lazy(() => import('../components/resource-management/ResourceManager'));
 const ExecutionRiskManager = lazy(() => import('../components/execution-risk/ExecutionRiskManager'));
@@ -26,8 +25,9 @@ const ModuleLoader = () => (
 
 const ModulesPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [activeModule, setActiveModule] = useState('vision');
+  const [activeModule, setActiveModule] = useState('targets'); // Default to targets since vision redirects
   const [visionBoard, setVisionBoard] = useState(null);
   const [showInfo, setShowInfo] = useState(true);
   const [moduleProgress, setModuleProgress] = useState({});
@@ -35,10 +35,17 @@ const ModulesPage = () => {
   // Read module from URL on mount and when URL changes
   useEffect(() => {
     const moduleParam = searchParams.get('module');
+
+    // Redirect 'vision' module to Strategy Sheet tab in VisionBoardDetail
+    if (moduleParam === 'vision') {
+      navigate(`/visionboards/${id}?tab=strategy`, { replace: true });
+      return;
+    }
+
     if (moduleParam && moduleConfigs.find(m => m.id === moduleParam)) {
       setActiveModule(moduleParam);
     }
-  }, [searchParams]);
+  }, [searchParams, navigate, id]);
 
   // Fetch vision board data for progress tracking
   useEffect(() => {
@@ -85,7 +92,6 @@ const ModulesPage = () => {
     const moduleProps = { visionBoardId: id };
 
     const moduleComponents = {
-      vision: <VisionStrategyManager {...moduleProps} />,
       targets: <TargetTracker {...moduleProps} />,
       resources: <ResourceManager {...moduleProps} />,
       execution: <ExecutionRiskManager {...moduleProps} />,
@@ -95,7 +101,7 @@ const ModulesPage = () => {
 
     return (
       <Suspense fallback={<ModuleLoader />}>
-        {moduleComponents[activeModule] || <VisionStrategyManager {...moduleProps} />}
+        {moduleComponents[activeModule] || <TargetTracker {...moduleProps} />}
       </Suspense>
     );
   };

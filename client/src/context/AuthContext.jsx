@@ -15,6 +15,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [impersonation, setImpersonation] = useState(null);
 
   useEffect(() => {
     checkAuth();
@@ -22,13 +23,21 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     const token = localStorage.getItem('token');
+    const savedImpersonation = localStorage.getItem('impersonation');
+
+    if (savedImpersonation) {
+      setImpersonation(JSON.parse(savedImpersonation));
+    }
+
     if (token) {
       try {
         const response = await api.get('/auth/me');
         setUser(response.data.data);
       } catch (err) {
         localStorage.removeItem('token');
+        localStorage.removeItem('impersonation');
         setUser(null);
+        setImpersonation(null);
       }
     }
     setLoading(false);
@@ -41,6 +50,9 @@ export const AuthProvider = ({ children }) => {
       const { token, ...userData } = response.data.data;
       localStorage.setItem('token', token);
       setUser(userData);
+      // Clear any previous impersonation on fresh login
+      localStorage.removeItem('impersonation');
+      setImpersonation(null);
       return { success: true };
     } catch (err) {
       const message = err.response?.data?.message || 'Login failed';
@@ -66,7 +78,9 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('impersonation');
     setUser(null);
+    setImpersonation(null);
   };
 
   const updateProfile = async (data) => {
@@ -80,6 +94,54 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Admin impersonation - login as another user
+  const loginAsUser = async (userId) => {
+    try {
+      setError(null);
+      const response = await api.post(`/admin/login-as/${userId}`);
+      const { token, ...userData } = response.data.data;
+
+      // Store impersonation info
+      if (userData.impersonation) {
+        const impInfo = {
+          isAdmin: true,
+          adminId: userData.impersonation.adminId,
+          adminName: userData.impersonation.adminName,
+          adminEmail: userData.impersonation.adminEmail,
+          adminToken: localStorage.getItem('token') // Save admin token
+        };
+        localStorage.setItem('impersonation', JSON.stringify(impInfo));
+        setImpersonation(impInfo);
+      }
+
+      // Set the target user's token
+      localStorage.setItem('token', token);
+      setUser(userData);
+
+      return { success: true };
+    } catch (err) {
+      const message = err.response?.data?.message || 'Failed to login as user';
+      setError(message);
+      return { success: false, error: message };
+    }
+  };
+
+  // Restore admin access after impersonation
+  const restoreAdminAccess = () => {
+    if (impersonation && impersonation.adminToken) {
+      // Restore admin token
+      localStorage.setItem('token', impersonation.adminToken);
+      localStorage.removeItem('impersonation');
+      setImpersonation(null);
+
+      // Fetch admin user data
+      checkAuth();
+
+      return { success: true };
+    }
+    return { success: false, error: 'No impersonation session found' };
+  };
+
   const value = {
     user,
     loading,
@@ -88,8 +150,12 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     updateProfile,
+    loginAsUser,
+    restoreAdminAccess,
     isAuthenticated: !!user,
-    isAdmin: user?.role === 'admin'
+    isAdmin: user?.role === 'admin',
+    isImpersonating: !!impersonation,
+    impersonation
   };
 
   return (

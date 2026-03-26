@@ -5,7 +5,8 @@ const {
   updateUser,
   deleteUser,
   getAnalytics,
-  getAllVisionBoards
+  getAllVisionBoards,
+  loginAsUser
 } = require('../controllers/adminController');
 const { protect } = require('../middleware/auth');
 const { adminOnly } = require('../middleware/adminAuth');
@@ -43,5 +44,8 @@ router.route('/users/:userId/visionboards')
       });
     }
   });
+
+// Admin login as another user (impersonation)
+router.post('/login-as/:userId', loginAsUser);
 
 module.exports = router;

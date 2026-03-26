@@ -2,6 +2,7 @@ const User = require('../models/User');
 const VisionBoard = require('../models/VisionBoard');
 const MonthlyUpdate = require('../models/MonthlyUpdate');
 const AdminAnalytics = require('../models/AdminAnalytics');
+const { generateToken } = require('../config/jwt');
 
 // @desc    Get all users
 // @route   GET /api/admin/users
@@ -203,15 +204,20 @@ const getAnalytics = async (req, res) => {
 // @access  Private/Admin
 const getAllVisionBoards = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 10, userId } = req.query;
 
-    const visionBoards = await VisionBoard.find()
+    const query = {};
+    if (userId) {
+      query.userId = userId;
+    }
+
+    const visionBoards = await VisionBoard.find(query)
       .populate('userId', 'name email')
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(parseInt(limit));
 
-    const total = await VisionBoard.countDocuments();
+    const total = await VisionBoard.countDocuments(query);
 
     res.json({
       success: true,
@@ -231,10 +237,76 @@ const getAllVisionBoards = async (req, res) => {
   }
 };
 
+// @desc    Admin login as another user (impersonation)
+// @route   POST /api/admin/login-as/:userId
+// @access  Private/Admin
+const loginAsUser = async (req, res) => {
+  try {
+    // req.user is the admin (set by auth middleware)
+    const adminUser = req.user;
+    const targetUserId = req.params.userId;
+
+    // Validate admin
+    if (adminUser.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only admins can use this feature'
+      });
+    }
+
+    // Find target user
+    const targetUser = await User.findById(targetUserId).select('-password');
+
+    if (!targetUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Prevent admin from logging into another admin account
+    if (targetUser.role === 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Cannot impersonate another admin'
+      });
+    }
+
+    // Generate token for target user
+    const targetToken = generateToken(targetUser._id);
+
+    // Store admin info for restoration
+    res.json({
+      success: true,
+      data: {
+        _id: targetUser._id,
+        name: targetUser.name,
+        email: targetUser.email,
+        role: targetUser.role,
+        avatar: targetUser.avatar,
+        token: targetToken,
+        // Admin info for restoration
+        impersonation: {
+          isAdmin: true,
+          adminId: adminUser._id,
+          adminName: adminUser.name,
+          adminEmail: adminUser.email
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 module.exports = {
   getUsers,
   updateUser,
   deleteUser,
   getAnalytics,
-  getAllVisionBoards
+  getAllVisionBoards,
+  loginAsUser
 };

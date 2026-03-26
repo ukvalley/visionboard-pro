@@ -5,7 +5,12 @@ const VisionBoard = require('../models/VisionBoard');
 // @access  Private
 const getVisionBoards = async (req, res) => {
   try {
-    const visionBoards = await VisionBoard.find({ userId: req.user._id })
+    // Allow admins to see all vision boards if they request it
+    const query = req.user.role === 'admin' && req.query.all === 'true'
+      ? {}
+      : { userId: req.user._id };
+
+    const visionBoards = await VisionBoard.find(query)
       .sort({ createdAt: -1 });
 
     res.json({
@@ -26,10 +31,15 @@ const getVisionBoards = async (req, res) => {
 // @access  Private
 const getVisionBoard = async (req, res) => {
   try {
-    const visionBoard = await VisionBoard.findOne({
-      _id: req.params.id,
-      userId: req.user._id
-    });
+    // Allow admins to view any vision board
+    const query = { _id: req.params.id };
+
+    // Regular users can only view their own vision boards
+    if (req.user.role !== 'admin') {
+      query.userId = req.user._id;
+    }
+
+    const visionBoard = await VisionBoard.findOne(query);
 
     if (!visionBoard) {
       return res.status(404).json({

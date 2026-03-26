@@ -3,11 +3,11 @@
 export const moduleConfigs = [
   {
     id: 'vision',
-    name: 'Vision Board',
-    shortName: 'Vision',
+    name: 'Strategy Sheet',
+    shortName: 'Strategy',
     icon: '🎯',
     description: 'Define your mission, vision, BHAG, core values, and strategic direction',
-    info: 'Set your company direction with Mission, Vision, Core Purpose, BHAG, Brand Promise, Core Values, and SWOT analysis.',
+    info: 'Set your company direction with Mission, Vision, Core Purpose, BHAG, Brand Promise, Core Values, and SWOT analysis. This is the core strategic planning module.',
     color: 'from-blue-500 to-indigo-600',
     hrefBase: 'visionboard',
     category: 'Planning',

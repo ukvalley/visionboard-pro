@@ -4,9 +4,10 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { classNames, getInitials } from '../../utils/helpers';
 import visionBoardService from '../../services/visionBoardService';
+import ImpersonationBanner from '../admin/ImpersonationBanner';
 
 const Sidebar = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, isImpersonating } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -176,6 +177,9 @@ const Sidebar = () => {
 
   return (
     <>
+      {/* Impersonation Banner */}
+      <ImpersonationBanner />
+
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
         <div className="flex items-center justify-between h-16 px-4">
