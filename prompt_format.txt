@@ -1,0 +1,250 @@
+================================================================================
+                  VISIONBOARD PRO - AI PROMPT FORMAT GUIDE
+================================================================================
+Document: prompt_format.txt
+Purpose: Standard format for AI prompts to maximize context understanding
+Updated: 2026-04-04
+
+================================================================================
+                    WHY THIS FILE EXISTS
+================================================================================
+
+This file ensures that every time you work with an AI assistant on this project,
+the AI can quickly understand the project context without re-analyzing the
+entire codebase. This saves time and provides consistent, accurate assistance.
+
+================================================================================
+                    QUICK START PROMPT TEMPLATE
+================================================================================
+
+When starting a new session with an AI assistant, copy and paste this:
+
+--- START TEMPLATE ---
+I'm working on VisionBoard Pro. Please read the context files in the project
+root to understand the codebase:
+
+1. /Users/umeshkhivasara/visionboard-pro/context.txt - Project overview
+2. /Users/umeshkhivasara/visionboard-pro/folder_structure.txt - Where files are
+3. /Users/umeshkhivasara/visionboard-pro/system.txt - Technical architecture
+4. /Users/umeshkhivasara/visionboard-pro/logs.txt - Feature history
+
+After reading these files, help me with: [YOUR REQUEST HERE]
+--- END TEMPLATE ---
+
+================================================================================
+                    DETAILED PROMPT FORMATS
+================================================================================
+
+1. GENERAL FEATURE REQUEST
+--------------------------------------------------------------------------------
+Context: VisionBoard Pro - [Brief context]
+Goal: [What you want to achieve]
+Current State: [What's already implemented]
+Desired Outcome: [What the result should look like]
+Affected Areas: [Which modules/components/routes]
+
+Example:
+  Context: VisionBoard Pro - full-stack business vision board app
+  Goal: Add email notifications for monthly progress reminders
+  Current State: Monthly updates are logged but no notifications sent
+  Desired Outcome: Users receive email reminder on 1st of each month
+  Affected Areas: Backend (new service), User model (email preferences)
+
+2. BUG FIX REQUEST
+--------------------------------------------------------------------------------
+Context: VisionBoard Pro
+Issue: [Description of the bug]
+Steps to Reproduce:
+  1. [Step 1]
+  2. [Step 2]
+  3. [Step 3]
+Expected Behavior: [What should happen]
+Actual Behavior: [What actually happens]
+Error Message: [Any error messages]
+Suspected Files: [Where the issue might be]
+
+3. CODE REVIEW REQUEST
+--------------------------------------------------------------------------------
+Context: VisionBoard Pro
+File(s): [Path to files]
+Purpose: [What this code does]
+Specific Concerns: [Performance, security, style, etc.]
+Review Focus: [What to pay attention to]
+
+4. NEW COMPONENT REQUEST
+--------------------------------------------------------------------------------
+Context: VisionBoard Pro - React frontend
+Component Name: [Name]
+Purpose: [What it does]
+Props Interface:
+  - prop1: type - description
+  - prop2: type - description
+Design Requirements: [Styling, layout]
+Integration Points: [Where it fits in the app]
+Similar Components: [Reference existing components]
+
+5. API ENDPOINT REQUEST
+--------------------------------------------------------------------------------
+Context: VisionBoard Pro - Express backend
+Endpoint: [METHOD /path]
+Purpose: [What it does]
+Request Body: [Schema]
+Response Format: [Expected response]
+Authentication: [Required yes/no, roles]
+Database Changes: [Any schema updates needed]
+
+6. DATABASE SCHEMA CHANGE
+--------------------------------------------------------------------------------
+Context: VisionBoard Pro - MongoDB/Mongoose
+Collection: [Which collection]
+Change Type: [Add field, Modify field, New collection, Index]
+Current Schema: [Brief description]
+Proposed Change: [Detailed description]
+Migration Strategy: [How to handle existing data]
+Affected Code: [What else needs updating]
+
+================================================================================
+                    CONTEXT FILES REFERENCE
+================================================================================
+
+FILE: context.txt
+  Contains: Project overview, features, tech stack, API endpoints, commands
+  Read when: Starting any new task, need high-level understanding
+  Update when: Major features added, tech stack changes
+
+FILE: folder_structure.txt
+  Contains: Complete file tree, quick reference for finding files
+  Read when: Looking for where something is implemented
+  Update when: New directories added, reorganization
+
+FILE: system.txt
+  Contains: Architecture, data flow, security, performance
+  Read when: Understanding how things work, debugging, optimization
+  Update when: Architecture changes, new patterns introduced
+
+FILE: logs.txt
+  Contains: Feature history, changelog, future plans
+  Read when: Understanding what's been built, what's planned
+  Update when: New features completed, bugs fixed
+
+FILE: prompt_format.txt
+  Contains: This file - how to format requests
+  Read when: You need to structure a request (meta!)
+
+================================================================================
+                    BEST PRACTICES FOR AI PROMPTS
+================================================================================
+
+DO:
+  ✓ Include specific file paths when known
+  ✓ Mention which module/feature you're working on
+  ✓ Provide context about current behavior
+  ✓ Reference similar existing implementations
+  ✓ Specify which files the AI should read first
+  ✓ Ask the AI to read context files before helping
+
+DON'T:
+  ✗ Ask vague questions without context
+  ✗ Assume the AI remembers previous sessions
+  ✗ Request changes without specifying files
+  ✗ Ask to "fix everything" - be specific
+  ✗ Forget to mention if it's frontend or backend
+
+================================================================================
+                    COMMON PATTERNS IN THIS PROJECT
+================================================================================
+
+When asking about:
+
+AUTHENTICATION:
+  Relevant: AuthContext.jsx, authController.js, auth.js (middleware)
+  Pattern: JWT in localStorage, ProtectedRoute wrapper
+
+VISION BOARDS:
+  Relevant: VisionBoard.js (model), StrategySheetManager.jsx
+  Pattern: Nested schema with completed/data structure
+
+API CALLS:
+  Relevant: services/ folder
+  Pattern: async/await with try-catch, { success, data, message } response
+
+COMPONENTS:
+  Relevant: components/common/ for UI, components/[feature]/ for specific
+  Pattern: Functional components with hooks, PropTypes not used (implicit)
+
+STYLING:
+  Relevant: Tailwind classes
+  Pattern: Utility classes, dark: prefix for dark mode
+
+================================================================================
+                    EXAMPLE CONVERSATION FLOW
+================================================================================
+
+USER:
+"I'm working on VisionBoard Pro. Please read the context files in
+/Users/umeshkhivasara/visionboard-pro/ to understand the project:
+- context.txt
+- folder_structure.txt
+- system.txt
+
+Then help me add a new feature to the Revenue Model section that
+allows users to set recurring revenue targets."
+
+AI:
+[Reads context files...]
+"Based on the project context, I can see VisionBoard Pro has a
+Strategy Sheet with 20 sections including revenueModel. Let me
+examine the current implementation first..."
+
+[AI reads relevant files: VisionBoard.js model, StrategySheetManager.jsx]
+
+"Now I understand the structure. To add recurring revenue targets,
+I'll need to:
+1. Update the revenueModel schema in VisionBoard.js
+2. Add UI components in the strategy section
+3. Update the controller if needed
+
+Here's my plan..."
+
+================================================================================
+                    UPDATING CONTEXT FILES
+================================================================================
+
+When to update each file:
+
+context.txt:
+  - New major features added
+  - API endpoints changed
+  - Tech stack changes
+  - New environment variables
+
+folder_structure.txt:
+  - New directories created
+  - Files moved/renamed
+  - New component categories
+
+system.txt:
+  - Architecture changes
+  - New data flows
+  - Security updates
+  - Performance changes
+
+logs.txt:
+  - After completing features
+  - Bug fixes
+  - Refactoring
+  - Config changes
+
+================================================================================
+                    PROJECT SUMMARY FOR QUICK REFERENCE
+================================================================================
+
+Name: VisionBoard Pro
+Type: Full-stack business vision board application
+Stack: React + Vite + Tailwind | Node + Express + MongoDB
+Structure: Client/Server monorepo
+Key Concept: 20-section strategic planning framework (Strategy Sheet)
+Main Features: Vision boards, progress tracking, AI coaching, PDF export
+Auth: JWT-based with roles (user/admin)
+
+================================================================================

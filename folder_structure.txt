@@ -1,0 +1,228 @@
+================================================================================
+                    VISIONBOARD PRO - FOLDER STRUCTURE
+================================================================================
+Project Root: /Users/umeshkhivasara/visionboard-pro
+Generated: 2026-04-04
+
+================================================================================
+                           ROOT LEVEL
+================================================================================
+
+visionboard-pro/
+├── client/                    # React Frontend Application
+├── server/                    # Node.js Backend API
+├── node_modules/              # Root dependencies (concurrently)
+├── .git/                      # Git repository
+├── .vercel/                   # Vercel deployment config
+├── package.json               # Root package.json (scripts)
+├── package-lock.json
+├── README.md                  # Main documentation
+├── vercel.json               # Vercel deployment settings
+├── render.yaml               # Render deployment config
+├── context.txt               # Project context (this helps AI understand project)
+├── logs.txt                  # Feature development logs
+├── folder_structure.txt      # This file - folder/file reference
+├── system.txt                # System architecture & tech details
+├── prompt_format.txt         # AI prompt format guide
+└── .gitignore
+
+================================================================================
+                           CLIENT (FRONTEND)
+================================================================================
+
+client/
+├── public/                    # Static assets
+├── dist/                      # Production build output
+├── src/
+│   ├── components/            # React components organized by feature
+│   │   ├── auth/              # Authentication components
+│   │   │   ├── Login.jsx              # Login form
+│   │   │   ├── Register.jsx           # Registration form
+│   │   │   └── ProtectedRoute.jsx     # Route protection wrapper
+│   │   ├── common/            # Shared UI components
+│   │   │   ├── Button.jsx             # Reusable button
+│   │   │   ├── Card.jsx               # Card container
+│   │   │   ├── Input.jsx              # Form input
+│   │   │   ├── Select.jsx             # Dropdown select
+│   │   │   ├── Modal.jsx              # Modal dialog
+│   │   │   ├── ProgressBar.jsx        # Progress indicator
+│   │   │   ├── Sidebar.jsx            # Navigation sidebar
+│   │   │   ├── ModuleCard.jsx         # Module display card
+│   │   │   ├── ModuleGuide.jsx        # Module help/guide
+│   │   │   └── ModuleHelpButton.jsx   # Help button component
+│   │   ├── dashboard/         # Dashboard components
+│   │   │   ├── Dashboard.jsx          # Main dashboard
+│   │   │   ├── MetricsCard.jsx        # KPI metric cards
+│   │   │   └── ProgressSummary.jsx    # Progress overview
+│   │   ├── visionboard/       # Vision board management
+│   │   │   ├── VisionBoardCreator.jsx # Create new board
+│   │   │   ├── VisionBoardList.jsx    # List of boards
+│   │   │   ├── SectionForm.jsx        # Section editor
+│   │   │   ├── ExportOptions.jsx      # PDF export UI
+│   │   │   └── VisualMode.jsx         # Visual board view
+│   │   ├── strategy/          # Strategy sheet (20 sections)
+│   │   │   └── StrategySheetManager.jsx # Main strategy manager
+│   │   ├── vision-strategy/   # Vision strategy
+│   │   │   └── VisionStrategyManager.jsx
+│   │   ├── target-tracker/    # Module 2: Target Tracker
+│   │   │   └── TargetTracker.jsx
+│   │   ├── resource-management/ # Module 3: Resource Management
+│   │   │   └── ResourceManager.jsx
+│   │   ├── execution-risk/    # Module 4: Execution & Risk
+│   │   │   └── ExecutionRiskManager.jsx
+│   │   ├── financial-insights/ # Module 5: Financial Insights
+│   │   │   └── FinancialInsights.jsx
+│   │   ├── collaboration/     # Module 6: Collaboration Hub
+│   │   │   └── CollaborationHub.jsx
+│   │   ├── modules/           # Module index/export
+│   │   │   └── index.js
+│   │   ├── progress/          # Progress tracking
+│   │   │   ├── ProgressTracker.jsx
+│   │   │   ├── MonthlyUpdate.jsx
+│   │   │   └── ComparisonChart.jsx
+│   │   ├── admin/             # Admin features
+│   │   │   ├── AdminDashboard.jsx
+│   │   │   ├── UserManagement.jsx
+│   │   │   ├── Analytics.jsx
+│   │   │   └── ImpersonationBanner.jsx
+│   │   └── settings/          # User settings
+│   │       └── Settings.jsx
+│   ├── pages/                 # Page components (routed)
+│   │   ├── Home.jsx                   # Landing page
+│   │   ├── Dashboard.jsx              # Dashboard page
+│   │   ├── VisionBoards.jsx           # Vision boards list
+│   │   ├── VisionBoardDetail.jsx      # Single board detail
+│   │   ├── Progress.jsx               # Progress page
+│   │   ├── Admin.jsx                  # Admin page
+│   │   ├── Modules.jsx                # Modules hub
+│   │   └── UserManagementPage.jsx     # User management
+│   ├── context/               # React Context providers
+│   │   ├── AuthContext.jsx            # Auth state management
+│   │   └── ThemeContext.jsx           # Dark/light theme
+│   ├── hooks/                 # Custom React hooks
+│   │   ├── useAuth.js                 # Auth hook
+│   │   └── useVisionBoard.js          # Vision board data hook
+│   ├── services/              # API service layer
+│   │   ├── api.js                     # Axios instance
+│   │   ├── authService.js             # Auth API calls
+│   │   ├── visionBoardService.js      # Vision board API
+│   │   ├── strategySheetService.js  # Strategy API
+│   │   ├── modulesService.js          # Modules API
+│   │   └── aiService.js               # AI features API
+│   ├── utils/                 # Utility functions
+│   │   ├── helpers.js               # General helpers
+│   │   ├── pdfGenerator.js          # PDF export logic
+│   │   └── aiSuggestions.js         # AI suggestion helpers
+│   ├── styles/                # CSS styles
+│   │   └── index.css
+│   ├── App.jsx               # Main app component (routing)
+│   └── main.jsx              # App entry point
+├── index.html                # HTML template
+├── package.json              # Client dependencies
+├── package-lock.json
+├── vite.config.js            # Vite configuration
+├── tailwind.config.js        # Tailwind CSS config
+└── postcss.config.js         # PostCSS config
+
+================================================================================
+                           SERVER (BACKEND)
+================================================================================
+
+server/
+├── config/                    # Configuration files
+│   ├── db.js                  # MongoDB connection
+│   └── jwt.js                 # JWT configuration
+├── controllers/               # Route controllers (business logic)
+│   ├── authController.js      # Authentication logic
+│   ├── visionBoardController.js # Vision board CRUD
+│   ├── strategySheetController.js # Strategy sheet logic
+│   ├── progressController.js  # Progress tracking
+│   └── adminController.js     # Admin operations
+├── middleware/                # Express middleware
+│   ├── auth.js                # JWT authentication middleware
+│   ├── adminAuth.js           # Admin role verification
+│   └── errorHandling.js       # Error handling
+├── models/                    # Mongoose models (schemas)
+│   ├── User.js                # User schema
+│   ├── VisionBoard.js         # Vision board schema (20+ sections)
+│   ├── MonthlyUpdate.js       # Monthly progress schema
+│   └── AdminAnalytics.js      # Analytics schema
+├── routes/                    # API route definitions
+│   ├── auth.js                # Auth routes
+│   ├── visionBoards.js         # Vision board routes
+│   ├── progress.js            # Progress routes
+│   ├── admin.js               # Admin routes
+│   └── ai.js                  # AI feature routes
+├── services/                  # Business services
+│   └── aiService.js           # OpenAI integration
+├── utils/                     # Utility functions
+│   └── helpers.js             # Server helpers
+├── server.js                  # Express app entry point
+├── package.json               # Server dependencies
+└── package-lock.json
+
+================================================================================
+                           QUICK REFERENCE
+================================================================================
+
+WHERE TO FIND THINGS:
+
+Authentication Logic:
+  - Server: server/controllers/authController.js
+  - Client: client/src/components/auth/
+  - Context: client/src/context/AuthContext.jsx
+
+Vision Board Data:
+  - Model: server/models/VisionBoard.js
+  - Controller: server/controllers/visionBoardController.js
+  - Service: client/src/services/visionBoardService.js
+  - Hook: client/src/hooks/useVisionBoard.js
+
+Strategy Sheet (20 Sections):
+  - Schema: server/models/VisionBoard.js (strategySheet field)
+  - Controller: server/controllers/strategySheetController.js
+  - UI: client/src/components/strategy/StrategySheetManager.jsx
+
+API Routes:
+  - Auth: server/routes/auth.js
+  - Vision Boards: server/routes/visionBoards.js
+  - Progress: server/routes/progress.js
+  - Admin: server/routes/admin.js
+  - AI: server/routes/ai.js
+
+Common UI Components:
+  - All in: client/src/components/common/
+
+Modules (6 Integrated Modules):
+  - Main: client/src/pages/Modules.jsx
+  - Target Tracker: client/src/components/target-tracker/
+  - Resource Management: client/src/components/resource-management/
+  - Execution & Risk: client/src/components/execution-risk/
+  - Financial Insights: client/src/components/financial-insights/
+  - Collaboration Hub: client/src/components/collaboration/
+
+PDF Export:
+  - Logic: client/src/utils/pdfGenerator.js
+  - UI: client/src/components/visionboard/ExportOptions.jsx
+
+AI Features:
+  - Server: server/services/aiService.js
+  - Routes: server/routes/ai.js
+  - Client: client/src/services/aiService.js
+  - Utils: client/src/utils/aiSuggestions.js
+
+Theme/Dark Mode:
+  - Context: client/src/context/ThemeContext.jsx
+  - Styles: client/src/styles/index.css
+
+================================================================================
+                           FILE COUNT SUMMARY
+================================================================================
+
+JavaScript/JSX Files: ~70+ files
+Configuration Files: 6 (package.json, vite.config.js, etc.)
+CSS Files: 1 (index.css with Tailwind)
+Documentation: 1 (README.md)
+Context Files: 5 (context.txt, logs.txt, folder_structure.txt, system.txt, prompt_format.txt)
+
+================================================================================

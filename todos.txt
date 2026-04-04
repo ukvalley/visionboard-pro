@@ -1,0 +1,286 @@
+================================================================================
+                      VISIONBOARD PRO - TASK TRACKER
+================================================================================
+Document: todos.txt
+Purpose: Track tasks, bugs, improvements, and development roadmap
+Updated: 2026-04-04
+Status Key: [PENDING] [IN_PROGRESS] [COMPLETED] [BLOCKED] [CANCELLED]
+Priority: [P0-CRITICAL] [P1-HIGH] [P2-MEDIUM] [P3-LOW]
+
+================================================================================
+                         ACTIVE TASKS
+================================================================================
+
+[PENDING] [P2] CONTEXT-001 - Context files maintenance
+  Description: Keep context files updated as project evolves
+  Files to Update: context.txt, logs.txt, folder_structure.txt, system.txt
+  Notes: Update after each major feature
+  Created: 2026-04-04
+
+[PENDING] [P2] DOC-001 - Add JSDoc comments to critical functions
+  Description: Document complex business logic functions
+  Areas: Controllers, AI service, PDF generator
+  Notes: Focus on functions with complex calculations
+  Created: 2026-04-04
+
+[PENDING] [P1] FEATURE-001 - Email notification system
+  Description: Send monthly reminder emails for progress updates
+  Backend: New email service (Nodemailer/SendGrid)
+  Frontend: Email preferences in Settings
+  Database: User schema update for email preferences
+  Dependencies: Email service provider
+  Notes: Users should opt-in
+  Created: 2026-04-04
+
+[PENDING] [P2] FEATURE-002 - Data export (CSV/Excel)
+  Description: Export vision board data to CSV/Excel format
+  Use Cases: Backup, external analysis, reporting
+  Components: ExportOptions.jsx enhancement
+  Priority: Medium - Nice to have
+  Created: 2026-04-04
+
+[PENDING] [P3] FEATURE-003 - Activity feed
+  Description: Track and display user activity history
+  Use Cases: See what changed, audit trail
+  Database: New ActivityLog collection
+  UI: New component or dashboard section
+  Priority: Low - Future enhancement
+  Created: 2026-04-04
+
+[PENDING] [P1] FEATURE-004 - Team collaboration (multi-user)
+  Description: Allow multiple users to collaborate on vision boards
+  Changes:
+    - VisionBoard schema: add collaborators array
+    - New permissions system (owner, editor, viewer)
+    - Real-time updates (Socket.io or polling)
+  Complexity: High
+  Priority: High - Major value add
+  Created: 2026-04-04
+
+[PENDING] [P2] FEATURE-005 - Comments and annotations
+  Description: Add comments to specific sections
+  Database: Comments collection with section references
+  UI: Comment threads in StrategySheetManager
+  Priority: Medium - Supports collaboration
+  Created: 2026-04-04
+
+[PENDING] [P2] FEATURE-006 - Advanced charts and graphs
+  Description: Visual progress charts, trend analysis
+  Library: Chart.js or Recharts
+  Areas: Progress page, Dashboard
+  Priority: Medium - Visual appeal
+  Created: 2026-04-04
+
+[PENDING] [P1] FEATURE-007 - Integration with accounting software
+  Description: Sync financial data from QuickBooks/Xero
+  API: QuickBooks API, Xero API
+  Security: OAuth2 flow, encrypted tokens
+  Priority: High - Automates data entry
+  Created: 2026-04-04
+
+[PENDING] [P3] FEATURE-008 - Custom branding
+  Description: Enterprise users can customize colors/logo
+  Scope: CSS variables, logo upload, custom domain
+  Priority: Low - Enterprise feature
+  Created: 2026-04-04
+
+[PENDING] [P2] FEATURE-009 - Webhook support
+  Description: Allow external systems to subscribe to events
+  Events: board.updated, progress.logged, etc.
+  Security: Webhook signature verification
+  Priority: Medium - Integration feature
+  Created: 2026-04-04
+
+[PENDING] [P2] FEATURE-010 - Mobile responsiveness audit
+  Description: Ensure all components work well on mobile
+  Areas: Sidebar, forms, tables, charts
+  Testing: Chrome DevTools device emulation
+  Priority: Medium - Accessibility
+  Created: 2026-04-04
+
+[PENDING] [P2] FEATURE-011 - Keyboard shortcuts
+  Description: Add keyboard navigation for power users
+  Shortcuts: Ctrl+S save, Ctrl+N new, etc.
+  Documentation: Help modal with shortcuts
+  Priority: Medium - UX enhancement
+  Created: 2026-04-04
+
+[PENDING] [P1] PERF-001 - Implement caching layer
+  Description: Add Redis for session and data caching
+  Benefits: Faster response times, reduced DB load
+  Complexity: Medium (new infrastructure)
+  Priority: High - Performance
+  Created: 2026-04-04
+
+[PENDING] [P2] PERF-002 - Image optimization
+  Description: Optimize avatar uploads, add CDN
+  Tools: Sharp.js for resizing, Cloudinary/S3 for storage
+  Priority: Medium - Load time
+  Created: 2026-04-04
+
+[PENDING] [P2] SEC-001 - Rate limiting
+  Description: Prevent API abuse
+  Implementation: express-rate-limit
+  Areas: Auth endpoints, AI endpoints (cost protection)
+  Priority: Medium - Security
+  Created: 2026-04-04
+
+[PENDING] [P2] SEC-002 - Input sanitization audit
+  Description: Review all user inputs for XSS/SQL injection
+  Tools: helmet.js, express-mongo-sanitize
+  Priority: Medium - Security
+  Created: 2026-04-04
+
+[PENDING] [P3] TEST-001 - Backend unit tests
+  Description: Add Jest tests for controllers
+  Coverage: Auth, VisionBoard, Strategy controllers
+  Priority: Low - Technical debt
+  Created: 2026-04-04
+
+[PENDING] [P3] TEST-002 - Frontend component tests
+  Description: Add React Testing Library tests
+  Priority: Low - Nice to have
+  Created: 2026-04-04
+
+[PENDING] [P3] DEVOPS-001 - CI/CD pipeline
+  Description: GitHub Actions for automated testing/deployment
+  Triggers: Push to main, PR creation
+  Actions: Test, Build, Deploy to staging
+  Priority: Low - Developer experience
+  Created: 2026-04-04
+
+[PENDING] [P3] DEVOPS-002 - Monitoring and logging
+  Description: Add application monitoring
+  Tools: Sentry for errors, LogRocket for sessions
+  Priority: Low - Observability
+  Created: 2026-04-04
+
+[PENDING] [P2] REFACTOR-001 - Component consolidation
+  Description: Review and merge duplicate UI patterns
+  Areas: Form components, modal patterns
+  Priority: Medium - Code quality
+  Created: 2026-04-04
+
+[PENDING] [P2] REFACTOR-002 - API response standardization
+  Description: Ensure all responses follow {success, data, message} format
+  Areas: All controller files
+  Priority: Medium - Consistency
+  Created: 2026-04-04
+
+================================================================================
+                         BUG TRACKER
+================================================================================
+
+[PENDING] [P0] BUG-001 - Placeholder for critical bugs
+  Description: None reported yet
+  Steps to Reproduce: N/A
+  Expected: N/A
+  Actual: N/A
+  Workaround: N/A
+  Reported: N/A
+
+================================================================================
+                         COMPLETED TASKS
+================================================================================
+
+[COMPLETED] [P0] INIT-001 - Project initialization
+  Completed: 2024-02-24
+  Description: Initial project setup with React and Node.js
+
+[COMPLETED] [P0] INIT-002 - Authentication system
+  Completed: 2024-02-25
+  Description: JWT auth with login, register, protected routes
+
+[COMPLETED] [P0] CORE-001 - Database models
+  Completed: 2024-02-25
+  Description: User, VisionBoard, MonthlyUpdate schemas
+
+[COMPLETED] [P0] CORE-002 - Legacy 8-section vision board
+  Completed: 2024-02-25
+  Description: Basic vision board functionality
+
+[COMPLETED] [P0] CORE-003 - Strategy Sheet (20 sections)
+  Completed: 2024-03-24
+  Description: Complete strategic planning framework
+
+[COMPLETED] [P0] CORE-004 - Progress tracking
+  Completed: 2024-03-24
+  Description: Real-time progress calculation and visualization
+
+[COMPLETED] [P0] CORE-005 - PDF export
+  Completed: 2024-03-24
+  Description: Export vision boards to PDF
+
+[COMPLETED] [P0] CORE-006 - AI integration
+  Completed: 2024-03-24
+  Description: OpenAI integration for coaching and suggestions
+
+[COMPLETED] [P1] UI-001 - Admin dashboard
+  Completed: 2024-03-26
+  Description: User management, analytics, impersonation
+
+[COMPLETED] [P1] UI-002 - Six modules system
+  Completed: 2024-03-26
+  Description: All 6 integrated modules (Target, Resource, Execution, Financial, Collaboration)
+
+[COMPLETED] [P2] UI-003 - Dark mode
+  Completed: 2024-03-26
+  Description: Theme toggle with persistence
+
+[COMPLETED] [P2] PERF-001 - Code splitting
+  Completed: 2024-03-26
+  Description: React.lazy for all pages
+
+[COMPLETED] [P2] CONFIG-001 - Deployment config
+  Completed: 2024-02-25
+  Description: Vercel and Render deployment files
+
+================================================================================
+                         ARCHIVED/CANCELLED
+================================================================================
+
+None archived yet.
+
+================================================================================
+                         HOW TO USE THIS FILE
+================================================================================
+
+ADDING NEW TASKS:
+  1. Create new entry with next ID number
+  2. Set status to [PENDING]
+  3. Assign priority (P0-P3)
+  4. Add creation date
+  5. Include detailed description
+
+STARTING WORK:
+  1. Change status to [IN_PROGRESS]
+  2. Add owner name if working in team
+  3. Note any blockers or dependencies
+
+COMPLETING:
+  1. Move to COMPLETED TASKS section
+  2. Add completion date
+  3. Brief description of solution
+
+BLOCKED:
+  1. Change status to [BLOCKED]
+  2. Add blocker reason
+  3. Note dependencies
+
+================================================================================
+                         QUICK STATS
+================================================================================
+
+Total Tasks: 25
+Pending: 25
+In Progress: 0
+Completed: 10 (historical)
+Blocked: 0
+
+By Priority:
+  P0 (Critical): 0
+  P1 (High): 6
+  P2 (Medium): 14
+  P3 (Low): 5
+
+================================================================================
