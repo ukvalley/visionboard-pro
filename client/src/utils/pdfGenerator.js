@@ -249,6 +249,11 @@ const createOnePageSummary = (visionBoard, strategySheet) => {
 
 // Create full PDF
 const createFullPDF = (visionBoard, sections, strategySheet, includeStrategySheet) => {
+  // DEBUG: Log the data structure to console
+  console.log('PDF Generator - visionBoard:', visionBoard);
+  console.log('PDF Generator - strategySheet:', strategySheet);
+  console.log('PDF Generator - revenueModel data:', strategySheet?.revenueModel?.data);
+
   // Extract data from both legacy sections and strategy sheet
   // Strategy Sheet data takes precedence if available
   const revenueModel = strategySheet?.revenueModel?.data || {};
@@ -256,25 +261,17 @@ const createFullPDF = (visionBoard, sections, strategySheet, includeStrategyShee
   const strategicPriorities = strategySheet?.strategicPriorities?.data || {};
   const orgStructure = strategySheet?.organizationalStructure?.data || {};
   const companyOverview = strategySheet?.companyOverview?.data || {};
-  const growthStrategy = strategySheet?.growthStrategy?.data || {};
-  const systems = strategySheet?.systemsToBuild?.data || {};
-  const teamPlan = strategySheet?.teamPlan?.data || {};
+  const growthStrategyData = strategySheet?.growthStrategy?.data || {};
+  const systemsData = strategySheet?.systemsToBuild?.data || {};
+  const teamPlanData = strategySheet?.teamPlan?.data || {};
   const quarterly = strategySheet?.quarterlyPlan?.data || {};
   const risks = strategySheet?.riskManagement?.data || {};
 
-  // Helper to get value from strategy sheet or fallback to legacy sections
-  const getVal = (strategyVal, legacyPath, format) => {
-    if (strategyVal !== undefined && strategyVal !== null && strategyVal !== '' && strategyVal !== 0) {
-      return strategyVal;
-    }
-    // Fallback to legacy sections
-    const keys = legacyPath.split('.');
-    let val = sections;
-    for (const key of keys) {
-      val = val?.[key];
-    }
-    return val;
-  };
+  // Check if any financial data exists
+  const hasFinancialData = revenueModel.currentRevenue || revenueModel.currentExpenses ||
+                           revenueModel.cashOnHand || revenueModel.monthlyBurn ||
+                           revenueModel.grossMargin || revenueModel.netMargin ||
+                           revenueModel.annualRevenueTarget || revenueModel.monthlyRevenueTarget;
 
   let strategyContent = '';
 
@@ -408,9 +405,9 @@ const createFullPDF = (visionBoard, sections, strategySheet, includeStrategyShee
 
   <!-- Growth Strategy -->
   ${renderMergedSection('Growth Strategy', [
-    { key: 'primaryRevenueSources', label: 'Primary Revenue Sources', value: growthStrategy.primaryRevenueSources || sections?.growthStrategy?.data?.primaryRevenueSources },
-    { key: 'targetCustomerSegments', label: 'Target Customer Segments', value: growthStrategy.targetCustomerSegments || sections?.growthStrategy?.data?.targetCustomerSegments },
-    { key: 'highValueClients', label: 'High-Value Clients', value: growthStrategy.highValueClients || sections?.growthStrategy?.data?.highValueClients },
+    { key: 'primaryRevenueSources', label: 'Primary Revenue Sources', value: growthStrategyData.primaryRevenueSources || sections?.growthStrategy?.data?.primaryRevenueSources },
+    { key: 'targetCustomerSegments', label: 'Target Customer Segments', value: growthStrategyData.targetCustomerSegments || sections?.growthStrategy?.data?.targetCustomerSegments },
+    { key: 'highValueClients', label: 'High-Value Clients', value: growthStrategyData.highValueClients || sections?.growthStrategy?.data?.highValueClients },
     { key: 'revenueStreams', label: 'Revenue Streams', value: revenueModel.revenueStreams },
     { key: 'averageDealSize', label: 'Average Deal Size', value: revenueModel.averageDealSize, format: 'currency' }
   ])}
@@ -435,19 +432,19 @@ const createFullPDF = (visionBoard, sections, strategySheet, includeStrategyShee
 
   <!-- Systems to Build -->
   ${renderMergedSection('Systems to Build', [
-    { key: 'crmSystem', label: 'CRM System', value: systems.crmSystem || sections?.systemsToBuild?.data?.crmSystem },
-    { key: 'salesFunnel', label: 'Sales Funnel', value: systems.salesFunnel || sections?.systemsToBuild?.data?.salesFunnel },
-    { key: 'operations', label: 'Operations', value: systems.operations || sections?.systemsToBuild?.data?.operations },
-    { key: 'financialTracking', label: 'Financial Tracking', value: systems.financialTracking },
-    { key: 'marketingAutomation', label: 'Marketing Automation', value: systems.marketingAutomation }
+    { key: 'crmSystem', label: 'CRM System', value: systemsData.crmSystem || sections?.systemsToBuild?.data?.crmSystem },
+    { key: 'salesFunnel', label: 'Sales Funnel', value: systemsData.salesFunnel || sections?.systemsToBuild?.data?.salesFunnel },
+    { key: 'operations', label: 'Operations', value: systemsData.operations || sections?.systemsToBuild?.data?.operations },
+    { key: 'financialTracking', label: 'Financial Tracking', value: systemsData.financialTracking },
+    { key: 'marketingAutomation', label: 'Marketing Automation', value: systemsData.marketingAutomation }
   ])}
 
   <!-- Team Plan -->
   ${renderMergedSection('Team Plan', [
-    { key: 'currentTeam', label: 'Current Team', value: teamPlan.currentTeam || sections?.teamPlan?.data?.currentTeam },
-    { key: 'futureHires', label: 'Future Hires', value: teamPlan.futureHires || sections?.teamPlan?.data?.futureHires },
-    { key: 'organizationalStructure', label: 'Organizational Structure', value: teamPlan.organizationalStructure },
-    { key: 'teamCulture', label: 'Team Culture', value: teamPlan.teamCulture }
+    { key: 'currentTeam', label: 'Current Team', value: teamPlanData.currentTeam || sections?.teamPlan?.data?.currentTeam },
+    { key: 'futureHires', label: 'Future Hires', value: teamPlanData.futureHires || sections?.teamPlan?.data?.futureHires },
+    { key: 'organizationalStructure', label: 'Organizational Structure', value: teamPlanData.organizationalStructure },
+    { key: 'teamCulture', label: 'Team Culture', value: teamPlanData.teamCulture }
   ])}
 
   <!-- Brand Goals -->
@@ -528,10 +525,11 @@ const renderSection = (title, data, fields, twoColumn = false) => {
 
 // Render merged section (Strategy Sheet data with fallback to legacy sections)
 const renderMergedSection = (title, fields, twoColumn = false) => {
-  // Filter out fields with no value
+  // Filter out fields with truly no value (undefined, null, empty string)
+  // BUT allow 0 as a valid value for numbers
   const fieldsWithData = fields.filter(field => {
     const val = field.value;
-    return val !== undefined && val !== null && val !== '' && val !== 0 &&
+    return val !== undefined && val !== null && val !== '' &&
            !(Array.isArray(val) && val.length === 0);
   });
 
@@ -552,8 +550,8 @@ const renderMergedSection = (title, fields, twoColumn = false) => {
   const content = fields.map(field => {
     let value = field.value;
 
-    // Handle empty values
-    if (value === undefined || value === null || value === '' || value === 0) {
+    // Handle truly empty values (but NOT 0)
+    if (value === undefined || value === null || value === '') {
       return `
         <div class="field">
           <span class="field-label">${escapeHtml(field.label)}:</span>
@@ -579,11 +577,7 @@ const renderMergedSection = (title, fields, twoColumn = false) => {
     if (field.format === 'currency' && typeof value === 'number') {
       value = '$' + value.toLocaleString();
     } else if (field.format === 'percent') {
-      if (typeof value === 'number') {
-        value = value + '%';
-      } else {
-        value = value + '%';
-      }
+      value = value + '%';
     }
 
     return `
