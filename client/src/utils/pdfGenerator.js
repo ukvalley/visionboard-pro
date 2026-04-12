@@ -249,6 +249,33 @@ const createOnePageSummary = (visionBoard, strategySheet) => {
 
 // Create full PDF
 const createFullPDF = (visionBoard, sections, strategySheet, includeStrategySheet) => {
+  // Extract data from both legacy sections and strategy sheet
+  // Strategy Sheet data takes precedence if available
+  const revenueModel = strategySheet?.revenueModel?.data || {};
+  const smartGoals = strategySheet?.smartGoals?.data || {};
+  const strategicPriorities = strategySheet?.strategicPriorities?.data || {};
+  const orgStructure = strategySheet?.organizationalStructure?.data || {};
+  const companyOverview = strategySheet?.companyOverview?.data || {};
+  const growthStrategy = strategySheet?.growthStrategy?.data || {};
+  const systems = strategySheet?.systemsToBuild?.data || {};
+  const teamPlan = strategySheet?.teamPlan?.data || {};
+  const quarterly = strategySheet?.quarterlyPlan?.data || {};
+  const risks = strategySheet?.riskManagement?.data || {};
+
+  // Helper to get value from strategy sheet or fallback to legacy sections
+  const getVal = (strategyVal, legacyPath, format) => {
+    if (strategyVal !== undefined && strategyVal !== null && strategyVal !== '' && strategyVal !== 0) {
+      return strategyVal;
+    }
+    // Fallback to legacy sections
+    const keys = legacyPath.split('.');
+    let val = sections;
+    for (const key of keys) {
+      val = val?.[key];
+    }
+    return val;
+  };
+
   let strategyContent = '';
 
   if (includeStrategySheet && Object.keys(strategySheet).length > 0) {
@@ -347,52 +374,96 @@ const createFullPDF = (visionBoard, sections, strategySheet, includeStrategyShee
     </div>
   </div>
 
-  <!-- Legacy Vision Board Sections -->
-  ${renderSection('Business Overview', sections.businessOverview?.data, [
-    { key: 'businessName', label: 'Business Name' },
-    { key: 'industry', label: 'Industry' },
-    { key: 'visionStatement', label: 'Vision Statement' },
-    { key: 'targetMarket', label: 'Target Market' }
+  <!-- Business Overview - Uses Strategy Sheet Company Overview -->
+  ${renderMergedSection('Business Overview', [
+    { key: 'companyName', label: 'Business Name', value: companyOverview.companyName || sections?.businessOverview?.data?.businessName },
+    { key: 'industry', label: 'Industry', value: companyOverview.industry || sections?.businessOverview?.data?.industry },
+    { key: 'coreOffering', label: 'Core Offering', value: companyOverview.coreOffering },
+    { key: 'businessStage', label: 'Business Stage', value: companyOverview.businessStage },
+    { key: 'visionStatement', label: 'Vision Statement', value: sections?.businessOverview?.data?.visionStatement }
   ])}
 
-  ${renderSection('Financial Goals', sections.financialGoals?.data, [
-    { key: 'annualRevenue', label: 'Annual Revenue Goal', format: 'currency' },
-    { key: 'monthlyRevenue', label: 'Monthly Revenue Goal', format: 'currency' },
-    { key: 'profitMargin', label: 'Profit Margin', format: 'percent' },
-    { key: 'personalIncome', label: 'Personal Income Goal', format: 'currency' }
+  <!-- Financial Goals - Uses Strategy Sheet Revenue Model -->
+  ${renderMergedSection('Financial Goals', [
+    { key: 'currentRevenue', label: 'Current Revenue', value: revenueModel.currentRevenue, format: 'currency' },
+    { key: 'currentExpenses', label: 'Current Expenses', value: revenueModel.currentExpenses, format: 'currency' },
+    { key: 'grossMargin', label: 'Gross Margin', value: revenueModel.grossMargin, format: 'percent' },
+    { key: 'netMargin', label: 'Net Margin', value: revenueModel.netMargin, format: 'percent' },
+    { key: 'cashOnHand', label: 'Cash on Hand', value: revenueModel.cashOnHand, format: 'currency' },
+    { key: 'monthlyBurn', label: 'Monthly Burn', value: revenueModel.monthlyBurn, format: 'currency' },
+    { key: 'runway', label: 'Runway (Months)', value: revenueModel.runway },
+    { key: 'annualRevenueTarget', label: 'Annual Revenue Target', value: revenueModel.annualRevenueTarget || sections?.financialGoals?.data?.annualRevenue, format: 'currency' },
+    { key: 'monthlyRevenueTarget', label: 'Monthly Revenue Target', value: revenueModel.monthlyRevenueTarget || sections?.financialGoals?.data?.monthlyRevenue, format: 'currency' }
   ], true)}
 
-  ${renderSection('Growth Strategy', sections.growthStrategy?.data, [
-    { key: 'primaryRevenueSources', label: 'Primary Revenue Sources' },
-    { key: 'targetCustomerSegments', label: 'Target Customer Segments' },
-    { key: 'highValueClients', label: 'High-Value Clients' }
+  <!-- Revenue Forecast -->
+  ${revenueModel.forecast?.year1Revenue || revenueModel.forecast?.year2Revenue || revenueModel.forecast?.year3Revenue ? `
+  ${renderMergedSection('Revenue Forecast', [
+    { key: 'year1Revenue', label: 'Year 1 Revenue', value: revenueModel.forecast?.year1Revenue, format: 'currency' },
+    { key: 'year2Revenue', label: 'Year 2 Revenue', value: revenueModel.forecast?.year2Revenue, format: 'currency' },
+    { key: 'year3Revenue', label: 'Year 3 Revenue', value: revenueModel.forecast?.year3Revenue, format: 'currency' },
+    { key: 'growthRate', label: 'Growth Rate %', value: revenueModel.forecast?.growthRate, format: 'percent' }
+  ], true)}
+  ` : ''}
+
+  <!-- Growth Strategy -->
+  ${renderMergedSection('Growth Strategy', [
+    { key: 'primaryRevenueSources', label: 'Primary Revenue Sources', value: growthStrategy.primaryRevenueSources || sections?.growthStrategy?.data?.primaryRevenueSources },
+    { key: 'targetCustomerSegments', label: 'Target Customer Segments', value: growthStrategy.targetCustomerSegments || sections?.growthStrategy?.data?.targetCustomerSegments },
+    { key: 'highValueClients', label: 'High-Value Clients', value: growthStrategy.highValueClients || sections?.growthStrategy?.data?.highValueClients },
+    { key: 'revenueStreams', label: 'Revenue Streams', value: revenueModel.revenueStreams },
+    { key: 'averageDealSize', label: 'Average Deal Size', value: revenueModel.averageDealSize, format: 'currency' }
   ])}
 
-  ${renderSection('Product/Service', sections.productService?.data, [
-    { key: 'currentServices', label: 'Current Services' },
-    { key: 'futureProducts', label: 'Future Products' }
+  <!-- Target Customer Profile -->
+  ${companyOverview.targetCustomerProfile?.whoBuys ? `
+  ${renderMergedSection('Target Customer Profile', [
+    { key: 'whoBuys', label: 'Who Buys', value: companyOverview.targetCustomerProfile?.whoBuys },
+    { key: 'companySize', label: 'Company Size', value: companyOverview.targetCustomerProfile?.companySize },
+    { key: 'industryType', label: 'Industry Type', value: companyOverview.targetCustomerProfile?.industryType },
+    { key: 'geography', label: 'Geography', value: companyOverview.targetCustomerProfile?.geography }
+  ])}
+  ` : ''}
+
+  <!-- Product/Service -->
+  ${renderMergedSection('Product/Service', [
+    { key: 'currentServices', label: 'Current Services', value: sections?.productService?.data?.currentServices },
+    { key: 'futureProducts', label: 'Future Products', value: sections?.productService?.data?.futureProducts },
+    { key: 'primaryProblem', label: 'Primary Problem Solved', value: companyOverview.primaryProblem },
+    { key: 'uniqueDifferentiation', label: 'Unique Differentiation', value: companyOverview.uniqueDifferentiation }
   ])}
 
-  ${renderSection('Systems to Build', sections.systemsToBuild?.data, [
-    { key: 'crmSystem', label: 'CRM System' },
-    { key: 'salesFunnel', label: 'Sales Funnel' },
-    { key: 'operations', label: 'Operations' }
+  <!-- Systems to Build -->
+  ${renderMergedSection('Systems to Build', [
+    { key: 'crmSystem', label: 'CRM System', value: systems.crmSystem || sections?.systemsToBuild?.data?.crmSystem },
+    { key: 'salesFunnel', label: 'Sales Funnel', value: systems.salesFunnel || sections?.systemsToBuild?.data?.salesFunnel },
+    { key: 'operations', label: 'Operations', value: systems.operations || sections?.systemsToBuild?.data?.operations },
+    { key: 'financialTracking', label: 'Financial Tracking', value: systems.financialTracking },
+    { key: 'marketingAutomation', label: 'Marketing Automation', value: systems.marketingAutomation }
   ])}
 
-  ${renderSection('Team Plan', sections.teamPlan?.data, [
-    { key: 'currentTeam', label: 'Current Team' },
-    { key: 'futureHires', label: 'Future Hires' }
+  <!-- Team Plan -->
+  ${renderMergedSection('Team Plan', [
+    { key: 'currentTeam', label: 'Current Team', value: teamPlan.currentTeam || sections?.teamPlan?.data?.currentTeam },
+    { key: 'futureHires', label: 'Future Hires', value: teamPlan.futureHires || sections?.teamPlan?.data?.futureHires },
+    { key: 'organizationalStructure', label: 'Organizational Structure', value: teamPlan.organizationalStructure },
+    { key: 'teamCulture', label: 'Team Culture', value: teamPlan.teamCulture }
   ])}
 
-  ${renderSection('Brand Goals', sections.brandGoals?.data, [
-    { key: 'websiteLeads', label: 'Website Leads/Month' },
-    { key: 'socialFollowers', label: 'Social Media Followers' }
+  <!-- Brand Goals -->
+  ${renderMergedSection('Brand Goals', [
+    { key: 'websiteLeads', label: 'Website Leads/Month', value: sections?.brandGoals?.data?.websiteLeads },
+    { key: 'socialFollowers', label: 'Social Media Followers', value: sections?.brandGoals?.data?.socialFollowers },
+    { key: 'caseStudies', label: 'Case Studies Goal', value: sections?.brandGoals?.data?.caseStudies },
+    { key: 'speakingEvents', label: 'Speaking/Events Goals', value: sections?.brandGoals?.data?.speakingEvents }
   ], true)}
 
-  ${renderSection('Lifestyle Vision', sections.lifestyleVision?.data, [
-    { key: 'workingHours', label: 'Working Hours/Day' },
-    { key: 'freeDays', label: 'Free Days/Month' },
-    { key: 'travelGoals', label: 'Travel Goals' }
+  <!-- Lifestyle Vision -->
+  ${renderMergedSection('Lifestyle Vision', [
+    { key: 'workingHours', label: 'Working Hours/Day', value: sections?.lifestyleVision?.data?.workingHours },
+    { key: 'freeDays', label: 'Free Days/Month', value: sections?.lifestyleVision?.data?.freeDays },
+    { key: 'travelGoals', label: 'Travel Goals', value: sections?.lifestyleVision?.data?.travelGoals },
+    { key: 'netWorthTarget', label: 'Net Worth Target', value: sections?.lifestyleVision?.data?.netWorthTarget, format: 'currency' }
   ], true)}
 
   ${strategyContent}
@@ -455,60 +526,585 @@ const renderSection = (title, data, fields, twoColumn = false) => {
   `;
 };
 
-// Render strategy sheet sections
-const renderStrategySheetSections = (strategySheet) => {
-  const sections = [
-    { id: 'companyOverview', title: 'Company Overview' },
-    { id: 'corePurpose', title: 'Core Purpose' },
-    { id: 'vision', title: 'Vision' },
-    { id: 'mission', title: 'Mission' },
-    { id: 'brandPromise', title: 'Brand Promise' },
-    { id: 'coreValues', title: 'Core Values' },
-    { id: 'bhag', title: 'BHAG' },
-    { id: 'vividDescription', title: 'Vivid Description' },
-    { id: 'swotAnalysis', title: 'SWOT Analysis' },
-    { id: 'strategicPriorities', title: 'Strategic Priorities' },
-    { id: 'threeYearStrategy', title: '3-Year Strategy' },
-    { id: 'smartGoals', title: 'SMART Goals' },
-    { id: 'quarterlyPlan', title: 'Quarterly Plan' },
-    { id: 'revenueModel', title: 'Revenue Model' },
-    { id: 'organizationalStructure', title: 'Organizational Structure' },
-    { id: 'sopRoadmap', title: 'SOP Roadmap' },
-    { id: 'automationSystems', title: 'Automation & Systems' },
-    { id: 'kpiDashboard', title: 'KPI Dashboard' },
-    { id: 'riskManagement', title: 'Risk Management' },
-    { id: 'strategySummary', title: 'Strategy Summary' }
-  ];
+// Render merged section (Strategy Sheet data with fallback to legacy sections)
+const renderMergedSection = (title, fields, twoColumn = false) => {
+  // Filter out fields with no value
+  const fieldsWithData = fields.filter(field => {
+    const val = field.value;
+    return val !== undefined && val !== null && val !== '' && val !== 0 &&
+           !(Array.isArray(val) && val.length === 0);
+  });
 
-  return sections.map(section => {
-    const data = strategySheet[section.id]?.data;
-    if (!data || Object.keys(data).length === 0) return '';
+  // Check if any fields have data
+  const hasData = fieldsWithData.length > 0;
 
-    return renderStrategySection(section.id, section.title, data);
-  }).join('');
-};
+  if (!hasData) {
+    return `
+      <div class="section">
+        <div class="section-header">${escapeHtml(title)}</div>
+        <div class="section-content">
+          <p class="field-empty">Not yet completed</p>
+        </div>
+      </div>
+    `;
+  }
 
-// Render a strategy section
-const renderStrategySection = (sectionId, title, data) => {
-  const fields = Object.keys(data).slice(0, 15); // Limit fields to prevent overflow
+  const content = fields.map(field => {
+    let value = field.value;
 
-  const content = fields.map(key => {
-    const value = data[key];
-    const label = safeFormatFieldName(key);
-
-    if (value === undefined || value === null || value === '') {
+    // Handle empty values
+    if (value === undefined || value === null || value === '' || value === 0) {
       return `
         <div class="field">
-          <span class="field-label">${escapeHtml(label)}:</span>
+          <span class="field-label">${escapeHtml(field.label)}:</span>
           <span class="field-value field-empty">Not specified</span>
         </div>
       `;
     }
 
+    // Format array values
+    if (Array.isArray(value)) {
+      if (value.length === 0) {
+        return `
+          <div class="field">
+            <span class="field-label">${escapeHtml(field.label)}:</span>
+            <span class="field-value field-empty">None</span>
+          </div>
+        `;
+      }
+      value = value.join(', ');
+    }
+
+    // Format numbers
+    if (field.format === 'currency' && typeof value === 'number') {
+      value = '$' + value.toLocaleString();
+    } else if (field.format === 'percent') {
+      if (typeof value === 'number') {
+        value = value + '%';
+      } else {
+        value = value + '%';
+      }
+    }
+
     return `
       <div class="field">
-        <span class="field-label">${escapeHtml(label)}:</span>
-        <span class="field-value">${escapeHtml(safeString(value))}</span>
+        <span class="field-label">${escapeHtml(field.label)}:</span>
+        <span class="field-value">${escapeHtml(String(value))}</span>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div class="section">
+      <div class="section-header">${escapeHtml(title)}</div>
+      <div class="section-content ${twoColumn ? 'two-column' : ''}">
+        ${content}
+      </div>
+    </div>
+  `;
+};
+
+// Render strategy sheet sections
+const renderStrategySheetSections = (strategySheet) => {
+  if (!strategySheet || Object.keys(strategySheet).length === 0) return '';
+
+  let html = '';
+
+  // Section 1: Company Overview
+  if (strategySheet.companyOverview?.data) {
+    const data = strategySheet.companyOverview.data;
+    html += renderStrategySection('Company Overview (Strategy Sheet)', [
+      { label: 'Company Name', value: data.companyName },
+      { label: 'Industry', value: data.industry },
+      { label: 'Core Offering', value: data.coreOffering },
+      { label: 'Primary Problem', value: data.primaryProblem },
+      { label: 'Business Stage', value: data.businessStage },
+      { label: 'Unique Differentiation', value: data.uniqueDifferentiation },
+      { label: 'Business Model', value: data.businessModel }
+    ]);
+
+    // Target Customer Profile
+    if (data.targetCustomerProfile?.whoBuys) {
+      html += renderStrategySection('Target Customer Profile', [
+        { label: 'Who Buys', value: data.targetCustomerProfile.whoBuys },
+        { label: 'Company Size', value: data.targetCustomerProfile.companySize },
+        { label: 'Industry Type', value: data.targetCustomerProfile.industryType },
+        { label: 'Geography', value: data.targetCustomerProfile.geography }
+      ]);
+    }
+  }
+
+  // Section 2: Core Purpose
+  if (strategySheet.corePurpose?.data) {
+    const data = strategySheet.corePurpose.data;
+    html += renderStrategySection('Core Purpose', [
+      { label: 'Broken Situation', value: data.brokenSituation },
+      { label: 'Who Benefits', value: data.whoBenefits },
+      { label: 'Purpose Statement', value: data.purposeStatement }
+    ]);
+  }
+
+  // Section 3: Vision
+  if (strategySheet.vision?.data) {
+    const data = strategySheet.vision.data;
+    html += renderStrategySection('Vision', [
+      { label: 'Time Horizon', value: data.timeHorizon },
+      { label: 'Desired Market Position', value: data.desiredMarketPosition },
+      { label: 'Scale', value: data.scale },
+      { label: 'Impact Type', value: data.impactType },
+      { label: 'Vision Statement', value: data.visionStatement }
+    ]);
+  }
+
+  // Section 4: Mission
+  if (strategySheet.mission?.data) {
+    const data = strategySheet.mission.data;
+    html += renderStrategySection('Mission', [
+      { label: 'Daily Actions', value: data.dailyActions },
+      { label: 'Value Delivery', value: data.valueDelivery },
+      { label: 'Primary Focus', value: data.primaryFocus },
+      { label: 'Mission Statement', value: data.missionStatement }
+    ]);
+  }
+
+  // Section 5: Brand Promise
+  if (strategySheet.brandPromise?.data) {
+    const data = strategySheet.brandPromise.data;
+    html += renderStrategySection('Brand Promise', [
+      { label: 'Promised Outcome', value: data.promisedOutcome },
+      { label: 'Timeframe', value: data.timeframe },
+      { label: 'Risk Reduction', value: data.riskReduction },
+      { label: 'Promise Statement', value: data.promiseStatement }
+    ]);
+  }
+
+  // Section 6: Core Values
+  if (strategySheet.coreValues?.data?.values?.length > 0) {
+    const values = strategySheet.coreValues.data.values;
+    html += renderStrategySection('Core Values', values.map(v => ({
+      label: v.value || 'Value',
+      value: v.behavior || ''
+    })));
+  }
+
+  // Section 7: BHAG
+  if (strategySheet.bhag?.data) {
+    const data = strategySheet.bhag.data;
+    html += renderStrategySection('BHAG (Big Hairy Audacious Goal)', [
+      { label: 'Time Horizon', value: data.timeHorizon },
+      { label: 'Revenue Goal', value: data.revenueGoal },
+      { label: 'Customer Scale', value: data.customerScale },
+      { label: 'Market Position', value: data.marketPosition },
+      { label: 'BHAG Statement', value: data.bhagStatement }
+    ]);
+  }
+
+  // Section 8: Vivid Description
+  if (strategySheet.vividDescription?.data) {
+    const data = strategySheet.vividDescription.data;
+    const fields = [
+      { label: 'Customer Experience', value: data.customerExperience },
+      { label: 'Internal Operations', value: data.internalOperations },
+      { label: 'Systems & Processes', value: data.systemsProcesses },
+      { label: 'Decision Making', value: data.decisionMaking },
+      { label: 'Market Perception', value: data.marketPerception }
+    ];
+    if (data.additionalPoints?.length > 0) {
+      fields.push({ label: 'Additional Points', value: data.additionalPoints.join('; ') });
+    }
+    html += renderStrategySection('Vivid Description', fields);
+  }
+
+  // Section 9: SWOT Analysis
+  if (strategySheet.swotAnalysis?.data) {
+    const data = strategySheet.swotAnalysis.data;
+    html += renderStrategySection('SWOT Analysis', [
+      { label: 'Strengths', value: data.strengths?.join(', ') },
+      { label: 'Weaknesses', value: data.weaknesses?.join(', ') },
+      { label: 'Opportunities', value: data.opportunities?.join(', ') },
+      { label: 'Threats', value: data.threats?.join(', ') }
+    ]);
+  }
+
+  // Section 10: Strategic Priorities
+  if (strategySheet.strategicPriorities?.data) {
+    const data = strategySheet.strategicPriorities.data;
+
+    // Priorities
+    if (data.priorities?.length > 0) {
+      html += `
+        <div class="section">
+          <div class="section-header strategy">Strategic Priorities</div>
+          <div class="section-content">
+            ${data.priorities.map((p, i) => `
+              <div class="field" style="margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                <div><strong>${i + 1}. ${escapeHtml(p.name || p.title || 'Priority')}</strong></div>
+                ${p.whyItMatters ? `<div style="margin-left: 20px; margin-top: 5px;"><span class="field-label">Why:</span> ${escapeHtml(p.whyItMatters)}</div>` : ''}
+                ${p.capabilitiesRequired ? `<div style="margin-left: 20px;"><span class="field-label">Capabilities:</span> ${escapeHtml(p.capabilitiesRequired)}</div>` : ''}
+                ${p.successLooksLike ? `<div style="margin-left: 20px;"><span class="field-label">Success:</span> ${escapeHtml(p.successLooksLike)}</div>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // WWW Actions
+    if (data.wwwActions?.length > 0) {
+      html += renderStrategySection('WWW Actions (Who, What, When)', data.wwwActions.map(a => ({
+        label: `${a.who || 'Unknown'} - ${a.what || 'Action'}`,
+        value: a.when || 'Not scheduled'
+      })));
+    }
+
+    // Rockefeller Habits
+    if (data.habits?.length > 0) {
+      html += renderStrategySection('Rockefeller Habits', data.habits.map(h => ({
+        label: h.name || 'Habit',
+        value: h.description || ''
+      })));
+    }
+
+    // Projects
+    if (data.projects?.length > 0) {
+      html += `
+        <div class="section">
+          <div class="section-header strategy">Project Portfolio</div>
+          <div class="section-content">
+            ${data.projects.map(p => `
+              <div class="field" style="margin-bottom: 10px;">
+                <span class="field-label">${escapeHtml(p.name || 'Project')}:</span>
+                <span class="field-value">Owner: ${escapeHtml(p.owner || 'Unassigned')}, Status: ${escapeHtml(p.status || 'Planning')}, Progress: ${p.progress || 0}%</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  // Section 11: 3-Year Strategy
+  if (strategySheet.threeYearStrategy?.data) {
+    const data = strategySheet.threeYearStrategy.data;
+    ['year1', 'year2', 'year3'].forEach(year => {
+      if (data[year]) {
+        html += renderStrategySection(`Year ${year.replace('year', '')} Strategy`, [
+          { label: 'Objectives', value: data[year].objectives?.join(', ') },
+          { label: 'Initiatives', value: data[year].initiatives?.join(', ') },
+          { label: 'Outcomes', value: data[year].outcomes?.join(', ') }
+        ]);
+      }
+    });
+  }
+
+  // Section 12: SMART Goals
+  if (strategySheet.smartGoals?.data) {
+    const data = strategySheet.smartGoals.data;
+
+    // Goals
+    if (data.goals?.length > 0) {
+      html += `
+        <div class="section">
+          <div class="section-header strategy">SMART Goals</div>
+          <div class="section-content">
+            ${data.goals.map((g, i) => `
+              <div class="field" style="margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+                <div><strong>Goal ${i + 1}: ${escapeHtml(g.goal || 'Unnamed Goal')}</strong></div>
+                ${g.metric ? `<div style="margin-left: 20px;"><span class="field-label">Metric:</span> ${escapeHtml(g.metric)}</div>` : ''}
+                ${g.target ? `<div style="margin-left: 20px;"><span class="field-label">Target:</span> ${escapeHtml(g.target)}</div>` : ''}
+                ${g.deadline ? `<div style="margin-left: 20px;"><span class="field-label">Deadline:</span> ${new Date(g.deadline).toLocaleDateString()}</div>` : ''}
+                ${g.owner ? `<div style="margin-left: 20px;"><span class="field-label">Owner:</span> ${escapeHtml(g.owner)}</div>` : ''}
+                ${g.progress ? `<div style="margin-left: 20px;"><span class="field-label">Progress:</span> ${g.progress}%</div>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // OKRs
+    if (data.okrs?.length > 0) {
+      html += `
+        <div class="section">
+          <div class="section-header strategy">OKRs</div>
+          <div class="section-content">
+            ${data.okrs.map((okr, i) => `
+              <div class="field" style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+                <div><strong>Objective ${i + 1}: ${escapeHtml(okr.objective || 'Unnamed Objective')}</strong></div>
+                ${okr.keyResults?.length > 0 ? `
+                  <div style="margin-left: 20px; margin-top: 5px;">
+                    <span class="field-label">Key Results:</span>
+                    <ul style="margin-left: 20px; margin-top: 5px;">
+                      ${okr.keyResults.map(kr => `
+                        <li>${escapeHtml(kr.text || 'KR')} ${kr.progress ? `(${kr.progress}%)` : ''}</li>
+                      `).join('')}
+                    </ul>
+                  </div>
+                ` : ''}
+                ${okr.owner ? `<div style="margin-left: 20px;"><span class="field-label">Owner:</span> ${escapeHtml(okr.owner)}</div>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // KPIs
+    if (data.kpis?.length > 0) {
+      html += `
+        <div class="section">
+          <div class="section-header strategy">KPIs</div>
+          <div class="section-content">
+            <div class="two-column">
+              ${data.kpis.map(kpi => `
+                <div class="field" style="margin-bottom: 8px;">
+                  <span class="field-label">${escapeHtml(kpi.name || 'KPI')}:</span>
+                  <span class="field-value">${escapeHtml(kpi.current || '0')} / ${escapeHtml(kpi.target || '0')} ${escapeHtml(kpi.unit || '')}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  // Section 13: Quarterly Plan
+  if (strategySheet.quarterlyPlan?.data?.quarters?.length > 0) {
+    const quarters = strategySheet.quarterlyPlan.data.quarters;
+    html += `
+      <div class="section">
+        <div class="section-header strategy">Quarterly Plan</div>
+        <div class="section-content">
+          ${quarters.map(q => `
+            <div class="field" style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+              <div><strong>${escapeHtml(q.quarter || 'Q')} - ${escapeHtml(q.focusTheme || 'No Theme')}</strong>${q.owner ? ` (Owner: ${escapeHtml(q.owner)})` : ''}</div>
+              ${q.keyActions?.length > 0 ? `
+                <div style="margin-left: 20px; margin-top: 5px;">
+                  <span class="field-label">Key Actions:</span> ${escapeHtml(q.keyActions.join(', '))}
+                </div>
+              ` : ''}
+              ${q.kpis?.length > 0 ? `
+                <div style="margin-left: 20px;">
+                  <span class="field-label">KPIs:</span> ${escapeHtml(q.kpis.join(', '))}
+                </div>
+              ` : ''}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // Section 14: Revenue Model
+  if (strategySheet.revenueModel?.data) {
+    const data = strategySheet.revenueModel.data;
+    html += renderStrategySection('Revenue Model Details', [
+      { label: 'Revenue Streams', value: data.revenueStreams?.join(', ') },
+      { label: 'Pricing Structure', value: data.pricingStructure },
+      { label: 'Average Deal Size', value: data.averageDealSize ? `$${data.averageDealSize.toLocaleString()}` : '' },
+      { label: 'Lead Requirements', value: data.leadRequirements },
+      { label: 'Conversion Assumptions', value: data.conversionAssumptions }
+    ]);
+
+    // Cash Strategies
+    if (data.cashStrategies?.length > 0) {
+      html += renderStrategySection('Cash Strategies', data.cashStrategies.map(cs => ({
+        label: cs.name || 'Strategy',
+        value: cs.impact ? `Impact: ${cs.impact}` : ''
+      })));
+    }
+
+    // ROI Calculations
+    if (data.roiCalculations?.length > 0) {
+      html += `
+        <div class="section">
+          <div class="section-header strategy">ROI Calculations</div>
+          <div class="section-content">
+            ${data.roiCalculations.map(roi => `
+              <div class="field" style="margin-bottom: 10px;">
+                <span class="field-label">${escapeHtml(roi.name || 'Investment')}:</span>
+                <span class="field-value">Invest: $${(roi.investment || 0).toLocaleString()}, Return: $${(roi.return || 0).toLocaleString()}, Timeframe: ${roi.timeframe || 12} months</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  // Section 15: Organizational Structure
+  if (strategySheet.organizationalStructure?.data) {
+    const data = strategySheet.organizationalStructure.data;
+
+    // Roles
+    if (data.roles?.length > 0) {
+      html += `
+        <div class="section">
+          <div class="section-header strategy">Organizational Roles</div>
+          <div class="section-content">
+            ${data.roles.map(r => `
+              <div class="field" style="margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #eee;">
+                <div><strong>${escapeHtml(r.role || 'Role')}</strong></div>
+                ${r.responsibility ? `<div style="margin-left: 20px;"><span class="field-label">Responsibility:</span> ${escapeHtml(r.responsibility)}</div>` : ''}
+                ${r.successMeasure ? `<div style="margin-left: 20px;"><span class="field-label">Success Measure:</span> ${escapeHtml(r.successMeasure)}</div>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // Face Chart
+    if (data.faceChart?.length > 0) {
+      html += `
+        <div class="section">
+          <div class="section-header strategy">FACE Chart</div>
+          <div class="section-content">
+            ${data.faceChart.map(f => `
+              <div class="field" style="margin-bottom: 10px;">
+                <span class="field-label">${escapeHtml(f.function || 'Function')}:</span>
+                <span class="field-value">Owner: ${escapeHtml(f.owner || 'Unassigned')}, A: ${escapeHtml(f.accountable || '-')}, C: ${escapeHtml(f.consulted || '-')}, I: ${escapeHtml(f.informed || '-')}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // Talent Assessment
+    if (data.talentAssessment?.length > 0) {
+      html += `
+        <div class="section">
+          <div class="section-header strategy">Talent Assessment</div>
+          <div class="section-content">
+            ${data.talentAssessment.map(t => `
+              <div class="field" style="margin-bottom: 10px;">
+                <span class="field-label">${escapeHtml(t.name || 'Team Member')} (${escapeHtml(t.role || 'No Role')}):</span>
+                <span class="field-value">Performance: ${escapeHtml(t.performance || 'N/A')}, Potential: ${escapeHtml(t.potential || 'N/A')}${t.notes ? ` - ${escapeHtml(t.notes)}` : ''}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  // Section 16: SOP Roadmap
+  if (strategySheet.sopRoadmap?.data) {
+    const data = strategySheet.sopRoadmap.data;
+
+    if (data.sops?.length > 0) {
+      html += renderStrategySection('SOPs', data.sops.map(s => ({
+        label: s.name || 'SOP',
+        value: s.description || ''
+      })));
+    }
+
+    if (data.paceChart?.length > 0) {
+      html += `
+        <div class="section">
+          <div class="section-header strategy">PACE Chart</div>
+          <div class="section-content">
+            ${data.paceChart.map(p => `
+              <div class="field" style="margin-bottom: 10px;">
+                <span class="field-label">${escapeHtml(p.process || 'Process')}:</span>
+                <span class="field-value">Owner: ${escapeHtml(p.owner || 'Unassigned')}, Frequency: ${escapeHtml(p.frequency || 'N/A')}, Status: ${escapeHtml(p.status || 'Not Started')}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  // Section 17: Automation & Systems
+  if (strategySheet.automationSystems?.data) {
+    const data = strategySheet.automationSystems.data;
+    html += renderStrategySection('Automation & Systems', [
+      { label: 'Core Tools', value: data.coreTools?.join(', ') },
+      { label: 'Key Automations', value: data.keyAutomations?.join(', ') },
+      { label: 'Dashboards Needed', value: data.dashboardsNeeded?.join(', ') }
+    ]);
+  }
+
+  // Section 18: KPI Dashboard
+  if (strategySheet.kpiDashboard?.data) {
+    const data = strategySheet.kpiDashboard.data;
+    html += renderStrategySection('KPI Dashboard', [
+      { label: 'Financial KPIs', value: data.financialKpis?.join(', ') },
+      { label: 'Sales KPIs', value: data.salesKpis?.join(', ') },
+      { label: 'Operational KPIs', value: data.operationalKpis?.join(', ') },
+      { label: 'Customer KPIs', value: data.customerKpis?.join(', ') },
+      { label: 'People KPIs', value: data.peopleKpis?.join(', ') }
+    ]);
+  }
+
+  // Section 19: Risk Management
+  if (strategySheet.riskManagement?.data?.risks?.length > 0) {
+    const risks = strategySheet.riskManagement.data.risks;
+    html += `
+      <div class="section">
+        <div class="section-header strategy">Risk Management</div>
+        <div class="section-content">
+          ${risks.map((r, i) => `
+            <div class="field" style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+              <div><strong>Risk ${i + 1}: ${escapeHtml(r.risk || 'Unnamed Risk')}</strong></div>
+              <div style="margin-left: 20px; margin-top: 5px;">
+                <span class="field-label">Probability:</span> ${escapeHtml(r.probability || 'N/A')}
+                <span class="field-label" style="margin-left: 20px;">Impact:</span> ${escapeHtml(r.impact || 'N/A')}
+              </div>
+              ${r.preventionStrategy ? `<div style="margin-left: 20px;"><span class="field-label">Prevention:</span> ${escapeHtml(r.preventionStrategy)}</div>` : ''}
+              ${r.monitoringMethod ? `<div style="margin-left: 20px;"><span class="field-label">Monitoring:</span> ${escapeHtml(r.monitoringMethod)}</div>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // Section 20: Strategy Summary
+  if (strategySheet.strategySummary?.data) {
+    const data = strategySheet.strategySummary.data;
+    html += renderStrategySection('Strategy Summary', [
+      { label: 'Who We Serve', value: data.whoWeServe },
+      { label: 'Problem We Solve', value: data.problemWeSolve },
+      { label: 'How We Make Money', value: data.howWeMakeMoney },
+      { label: 'Why We Win', value: data.whyWeWin },
+      { label: 'Year 1 Focus', value: data.year1Focus },
+      { label: '3-Year Direction', value: data.threeYearDirection },
+      { label: '10-Year Ambition', value: data.tenYearAmbition }
+    ]);
+  }
+
+  return html;
+};
+
+// Render a strategy section (accepts array of field objects)
+const renderStrategySection = (title, fields) => {
+  if (!fields || fields.length === 0) return '';
+
+  // Filter out fields with no value
+  const validFields = fields.filter(f => {
+    const val = f.value;
+    return val !== undefined && val !== null && val !== '' && val !== 0 &&
+           !(Array.isArray(val) && val.length === 0);
+  });
+
+  if (validFields.length === 0) return '';
+
+  const content = validFields.map(field => {
+    let value = field.value;
+
+    // Handle arrays
+    if (Array.isArray(value)) {
+      value = value.join(', ');
+    }
+
+    return `
+      <div class="field">
+        <span class="field-label">${escapeHtml(field.label)}:</span>
+        <span class="field-value">${escapeHtml(String(value))}</span>
       </div>
     `;
   }).join('');
@@ -517,7 +1113,7 @@ const renderStrategySection = (sectionId, title, data) => {
     <div class="section">
       <div class="section-header strategy">${escapeHtml(title)}</div>
       <div class="section-content">
-        ${content || '<p class="field-empty">Not yet completed</p>'}
+        ${content}
       </div>
     </div>
   `;
