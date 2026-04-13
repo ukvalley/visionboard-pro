@@ -430,21 +430,21 @@ const createFullPDF = (visionBoard, sections, strategySheet, includeStrategyShee
     { key: 'uniqueDifferentiation', label: 'Unique Differentiation', value: companyOverview.uniqueDifferentiation }
   ])}
 
-  <!-- Systems to Build -->
+  <!-- Systems to Build - Uses LEGACY sections -->
   ${renderMergedSection('Systems to Build', [
-    { key: 'crmSystem', label: 'CRM System', value: systemsData.crmSystem || sections?.systemsToBuild?.data?.crmSystem },
-    { key: 'salesFunnel', label: 'Sales Funnel', value: systemsData.salesFunnel || sections?.systemsToBuild?.data?.salesFunnel },
-    { key: 'operations', label: 'Operations', value: systemsData.operations || sections?.systemsToBuild?.data?.operations },
-    { key: 'financialTracking', label: 'Financial Tracking', value: systemsData.financialTracking },
-    { key: 'marketingAutomation', label: 'Marketing Automation', value: systemsData.marketingAutomation }
+    { key: 'crmSystem', label: 'CRM System', value: sections?.systemsToBuild?.data?.crmSystem },
+    { key: 'salesFunnel', label: 'Sales Funnel', value: sections?.systemsToBuild?.data?.salesFunnel },
+    { key: 'operations', label: 'Operations', value: sections?.systemsToBuild?.data?.operations },
+    { key: 'financialTracking', label: 'Financial Tracking', value: sections?.systemsToBuild?.data?.financialTracking },
+    { key: 'marketingAutomation', label: 'Marketing Automation', value: sections?.systemsToBuild?.data?.marketingAutomation }
   ])}
 
-  <!-- Team Plan -->
+  <!-- Team Plan - Uses LEGACY sections -->
   ${renderMergedSection('Team Plan', [
-    { key: 'currentTeam', label: 'Current Team', value: teamPlanData.currentTeam || sections?.teamPlan?.data?.currentTeam },
-    { key: 'futureHires', label: 'Future Hires', value: teamPlanData.futureHires || sections?.teamPlan?.data?.futureHires },
-    { key: 'organizationalStructure', label: 'Organizational Structure', value: teamPlanData.organizationalStructure },
-    { key: 'teamCulture', label: 'Team Culture', value: teamPlanData.teamCulture }
+    { key: 'currentTeam', label: 'Current Team', value: sections?.teamPlan?.data?.currentTeam },
+    { key: 'futureHires', label: 'Future Hires', value: sections?.teamPlan?.data?.futureHires },
+    { key: 'organizationalStructure', label: 'Organizational Structure', value: sections?.teamPlan?.data?.organizationalStructure },
+    { key: 'teamCulture', label: 'Team Culture', value: sections?.teamPlan?.data?.teamCulture }
   ])}
 
   <!-- Brand Goals -->
@@ -460,7 +460,7 @@ const createFullPDF = (visionBoard, sections, strategySheet, includeStrategyShee
     { key: 'workingHours', label: 'Working Hours/Day', value: sections?.lifestyleVision?.data?.workingHours },
     { key: 'freeDays', label: 'Free Days/Month', value: sections?.lifestyleVision?.data?.freeDays },
     { key: 'travelGoals', label: 'Travel Goals', value: sections?.lifestyleVision?.data?.travelGoals },
-    { key: 'netWorthTarget', label: 'Net Worth Target', value: sections?.lifestyleVision?.data?.netWorthTarget, format: 'currency' }
+    { key: 'netWorthTarget', label: 'Net Worth Target', value: sections?.lifestyleVision?.data?.netWorthTarget || sections?.lifestyleVision?.data?.netWorth, format: 'currency' }
   ], true)}
 
   ${strategyContent}
