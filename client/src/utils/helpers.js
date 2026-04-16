@@ -20,13 +20,18 @@ export const formatPercent = (value) => {
   return `${Math.round(value)}%`;
 };
 
+/**
+ * Format date to DD/MM/YYYY format (consistent throughout the panel)
+ * @param {string|Date} date - Date to format
+ * @returns {string} Formatted date in DD/MM/YYYY format
+ */
 export const formatDate = (date) => {
   if (!date) return '-';
-  return new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
+  const d = new Date(date);
+  const day = d.getDate().toString().padStart(2, '0');
+  const month = (d.getMonth() + 1).toString().padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
 };
 
 export const formatDateTime = (date) => {
@@ -110,6 +115,64 @@ export const sectionNames = {
   teamPlan: 'Team Plan',
   brandGoals: 'Brand Goals',
   lifestyleVision: 'Lifestyle Vision'
+};
+
+/**
+ * UK English spelling conversions
+ * Use these functions when displaying text to ensure British English standards
+ */
+export const toBritishSpelling = (text) => {
+  if (!text) return text;
+  return text
+    .replace(/organization/gi, 'organisation')
+    .replace(/Organization/gi, 'Organisation')
+    .replace(/color/gi, 'colour')
+    .replace(/Color/gi, 'Colour')
+    .replace(/behavior/gi, 'behaviour')
+    .replace(/Behavior/gi, 'Behaviour')
+    .replace(/favorite/gi, 'favourite')
+    .replace(/Favorite/gi, 'Favourite')
+    .replace(/center/gi, 'centre')
+    .replace(/Center/gi, 'Centre')
+    .replace(/analyze/gi, 'analyse')
+    .replace(/Analyze/gi, 'Analyse')
+    .replace(/customize/gi, 'customise')
+    .replace(/Customize/gi, 'Customise')
+    .replace(/optimize/gi, 'optimise')
+    .replace(/Optimize/gi, 'Optimise')
+    .replace(/initialize/gi, 'initialise')
+    .replace(/Initialize/gi, 'Initialise')
+    .replace(/canceled/gi, 'cancelled')
+    .replace(/Canceled/gi, 'Cancelled')
+    .replace(/honor/gi, 'honour')
+    .replace(/Honor/gi, 'Honour')
+    .replace(/humor/gi, 'humour')
+    .replace(/Humor/gi, 'Humour')
+    .replace(/license/g, 'licence') // Only lowercase as 'license' is correct for verb
+    .replace(/authoriz/gi, 'authoris') // covers authorize, authorization, etc.
+    .replace(/Authoriz/gi, 'Authoris');
+};
+
+/**
+ * Format price with currency symbol - no space between symbol and value
+ * @param {number} amount - Price amount
+ * @param {string} currency - Currency code (default: 'USD')
+ * @returns {string} Formatted price
+ */
+export const formatPrice = (amount, currency = 'USD') => {
+  if (!amount && amount !== 0) return '-';
+  const symbols = {
+    USD: '$',
+    GBP: '£',
+    EUR: '€',
+    INR: '₹'
+  };
+  const symbol = symbols[currency] || currency;
+  const formatted = new Intl.NumberFormat('en-GB', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  }).format(amount);
+  return `${symbol}${formatted}`;
 };
 
 export const months = [
