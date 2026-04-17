@@ -24,6 +24,7 @@ const UserManagementPage = lazy(() => import('./pages/UserManagementPage'));
 const VisionBoardCreator = lazy(() => import('./components/visionboard/VisionBoardCreator'));
 const MonthlyUpdate = lazy(() => import('./components/progress/MonthlyUpdate'));
 const Settings = lazy(() => import('./components/settings/Settings'));
+const ProductPlanningManager = lazy(() => import('./components/product-planning/ProductPlanningManager'));
 
 // Loading component for Suspense fallback
 const PageLoader = () => (
@@ -149,6 +150,17 @@ function App() {
                 <ProtectedRoute>
                   <AppLayout>
                     <SuspenseWrapper><Settings /></SuspenseWrapper>
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/product-planning"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <SuspenseWrapper><ProductPlanningManager /></SuspenseWrapper>
                   </AppLayout>
                 </ProtectedRoute>
               }

@@ -28,6 +28,7 @@ app.use('/api/visionboards', require('./routes/visionBoards'));
 app.use('/api/progress', require('./routes/progress'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/ai', require('./routes/ai'));
+app.use('/api/product-planning', require('./routes/productPlanningRoutes'));
 
 // Health check
 app.get('/api/health', (req, res) => {
