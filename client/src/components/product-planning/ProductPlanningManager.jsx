@@ -94,9 +94,11 @@ const ProductPlanningManager = () => {
   const fetchProducts = async () => {
     try {
       const response = await productPlanningService.getAllProducts();
-      setProducts(response.data || []);
+      // API returns { success: true, data: [...] }
+      setProducts(response.data?.data || []);
     } catch (error) {
       console.error('Failed to fetch products:', error);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -132,7 +134,7 @@ const ProductPlanningManager = () => {
 
     try {
       const response = await productPlanningService.createProduct(addFormData);
-      setProducts([...products, response.data]);
+      setProducts([...products, response.data?.data]);
       setShowAddModal(false);
       setAddFormData({ name: '', category: '', status: 'idea' });
       setFormErrors({});
@@ -154,7 +156,7 @@ const ProductPlanningManager = () => {
         currentProduct._id,
         editFormData
       );
-      setProducts(products.map(p => p._id === currentProduct._id ? response.data : p));
+      setProducts(products.map(p => p._id === currentProduct._id ? response.data?.data : p));
       setShowEditModal(false);
       setFormErrors({});
       setSuccessMessage('Product updated successfully.');
@@ -180,7 +182,7 @@ const ProductPlanningManager = () => {
   const handleDuplicateProduct = async (product) => {
     try {
       const response = await productPlanningService.duplicateProduct(product._id);
-      setProducts([...products, response.data]);
+      setProducts([...products, response.data?.data]);
       setSuccessMessage('Product duplicated successfully.');
     } catch (error) {
       console.error('Failed to duplicate product:', error);

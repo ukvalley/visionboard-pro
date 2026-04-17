@@ -31,8 +31,7 @@ const Select = forwardRef(({
   return (
     <div className={className}>
       {label && (
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-003e
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           {label}
           {required && <span className="text-red-500">*</span>}
         </label>

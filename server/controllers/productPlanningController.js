@@ -129,10 +129,8 @@ exports.duplicateProduct = async (req, res) => {
 };
 
 // Update specific step
-exports.updateStep = async (req, res) => {
+exports.updateStep = async (req, res, stepNumber) => {
   try {
-    const { step } = req.params;
-    const stepNumber = parseInt(step);
 
     const product = await ProductPlanning.findOneAndUpdate(
       { _id: req.params.id, user: req.user.id },
