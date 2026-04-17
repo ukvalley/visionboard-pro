@@ -7,6 +7,7 @@ import Modal from '../common/Modal';
 import Select from '../common/Select';
 import { formatDate } from '../../utils/helpers';
 import productPlanningService from '../../services/productPlanningService';
+import { openPDFPrintDialog, exportProductData } from '../../utils/pdfExport';
 
 // Import Wizard Steps
 import Step1_ProblemDefinition from './steps/Step1_ProblemDefinition';
@@ -19,6 +20,7 @@ import Step7_ProductVisualization from './steps/Step7_ProductVisualization';
 import Step8_BusinessModel from './steps/Step8_BusinessModel';
 import Step9_GoToMarket from './steps/Step9_GoToMarket';
 import Step10_MetricsKPIs from './steps/Step10_MetricsKPIs';
+import ProductCanvas from './ProductCanvas';
 
 const PRODUCT_CATEGORIES = [
   { value: 'saas', label: 'SaaS' },
@@ -492,42 +494,26 @@ const ProductPlanningManager = () => {
   );
 
   // Render Canvas View
-  const renderCanvasView = () => (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => setViewMode('list')}
-            className="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white cursor-pointer"
-            aria-label="Back to list"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </button>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {currentProduct?.name} - Canvas
-            </h1>
-            <p className="text-gray-500 dark:text-gray-400">
-              Complete product planning overview
-            </p>
-          </div>
-        </div>
-        <div className="flex gap-3">
-          <Button variant="secondary" size="sm" onClick={() => setViewMode('wizard')}>
-            Edit in Wizard
-          </Button>
-          <Button variant="primary" size="sm">
-            Export PDF
-          </Button>
-        </div>
-      </div>
+  const handleExportPDF = () => {
+    if (!currentProduct) return;
+    openPDFPrintDialog(currentProduct);
+  };
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-8 border border-gray-200 dark:border-gray-700">
-        <p className="text-center text-gray-500 dark:text-gray-400">Product Canvas View - To be implemented</p>
-      </div>
-    </div>
+  const handleExportJSON = () => {
+    if (!currentProduct) return;
+    exportProductData(currentProduct);
+    setSuccessMessage('Product data exported successfully.');
+  };
+
+  const renderCanvasView = () => (
+    <ProductCanvas
+      product={currentProduct}
+      onEdit={(product) => {
+        setCurrentProduct(product);
+        setViewMode('wizard');
+      }}
+      onClose={() => setViewMode('list')}
+    />
   );
 
   return (
