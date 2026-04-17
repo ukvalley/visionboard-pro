@@ -8,6 +8,7 @@ import Sidebar from './components/common/Sidebar';
 // Auth Components (loaded immediately for login/register pages)
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
+import ForgotPassword from './components/auth/ForgotPassword';
 
 // Lazy load pages for code-splitting
 const Home = lazy(() => import('./pages/Home'));
@@ -73,6 +74,7 @@ function App() {
             <Route path="/" element={<SuspenseWrapper><Home /></SuspenseWrapper>} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
 
             {/* Protected Routes */}
             <Route

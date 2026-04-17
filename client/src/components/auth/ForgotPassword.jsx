@@ -1,38 +1,21 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { Link } from 'react-router-dom';
 import Button from '../common/Button';
 import Input from '../common/Input';
-import { validateEmailId, validatePassword, validateName } from '../../utils/validation';
+import { validateEmailId } from '../../utils/validation';
 
-const Register = () => {
-  const [name, setName] = useState('');
+const ForgotPassword = () => {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [successMessage, setSuccessMessage] = useState('');
   const [generalError, setGeneralError] = useState('');
-  const { register } = useAuth();
-  const navigate = useNavigate();
 
   const validateForm = () => {
     const newErrors = {};
 
-    const nameError = validateName(name, 'Full Name');
-    if (nameError) newErrors.name = nameError;
-
     const emailError = validateEmailId(email, 'Email ID');
     if (emailError) newErrors.email = emailError;
-
-    const passwordError = validatePassword(password, 'Password');
-    if (passwordError) newErrors.password = passwordError;
-
-    if (!confirmPassword) {
-      newErrors.confirmPassword = 'Confirm Password is required.';
-    } else if (password !== confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match.';
-    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -41,40 +24,32 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setGeneralError('');
+    setSuccessMessage('');
 
     if (!validateForm()) return;
 
     setLoading(true);
-    const result = await register(name, email, password);
 
-    if (result.success) {
-      navigate('/dashboard');
-    } else {
-      setGeneralError(result.error || 'Registration failed. Please try again.');
+    // Simulate API call for password reset
+    try {
+      // In a real implementation, this would call an API
+      // await api.post('/auth/forgot-password', { email });
+
+      // Simulate success for now
+      setTimeout(() => {
+        setSuccessMessage('Password reset instructions have been sent to your Email ID.');
+        setEmail('');
+        setLoading(false);
+      }, 1500);
+    } catch (error) {
+      setGeneralError('Failed to send reset instructions. Please try again.');
+      setLoading(false);
     }
-
-    setLoading(false);
-  };
-
-  // Clear field error when user types
-  const handleNameChange = (e) => {
-    setName(e.target.value);
-    if (errors.name) setErrors(prev => ({ ...prev, name: null }));
   };
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
     if (errors.email) setErrors(prev => ({ ...prev, email: null }));
-  };
-
-  const handlePasswordChange = (e) => {
-    setPassword(e.target.value);
-    if (errors.password) setErrors(prev => ({ ...prev, password: null }));
-  };
-
-  const handleConfirmPasswordChange = (e) => {
-    setConfirmPassword(e.target.value);
-    if (errors.confirmPassword) setErrors(prev => ({ ...prev, confirmPassword: null }));
   };
 
   return (
@@ -90,10 +65,10 @@ const Register = () => {
             </div>
           </div>
           <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
-            Create your account
+            Forgot Password?
           </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Start building your business vision today
+            Enter your Email ID and we will send you instructions to reset your password.
           </p>
         </div>
 
@@ -105,17 +80,13 @@ const Register = () => {
             </div>
           )}
 
+          {successMessage && (
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 px-4 py-3 rounded-lg text-sm">
+              {successMessage}
+            </div>
+          )}
+
           <div className="space-y-4">
-            <Input
-              label="Full Name"
-              type="text"
-              value={name}
-              onChange={handleNameChange}
-              placeholder="Enter Full Name"
-              required
-              error={errors.name}
-              maxLength={100}
-            />
             <Input
               label="Email ID"
               type="email"
@@ -126,29 +97,6 @@ const Register = () => {
               error={errors.email}
               maxLength={255}
             />
-            <Input
-              label="Password"
-              type="password"
-              value={password}
-              onChange={handlePasswordChange}
-              placeholder="Enter Password"
-              helperText="Password must be at least 8 characters with uppercase, lowercase, and number."
-              required
-              error={errors.password}
-              showPasswordToggle
-              maxLength={128}
-            />
-            <Input
-              label="Confirm Password"
-              type="password"
-              value={confirmPassword}
-              onChange={handleConfirmPasswordChange}
-              placeholder="Enter Confirm Password"
-              required
-              error={errors.confirmPassword}
-              showPasswordToggle
-              maxLength={128}
-            />
           </div>
 
           <Button
@@ -158,18 +106,18 @@ const Register = () => {
             loading={loading}
             className="w-full"
           >
-            Create Account
+            Send Reset Instructions
           </Button>
 
           <div className="text-center text-sm">
             <span className="text-gray-600 dark:text-gray-400">
-              Already have an account?{' '}
+              Remember your password?{' '}
             </span>
             <Link
               to="/login"
               className="font-medium text-primary-600 hover:text-primary-500"
             >
-              Sign in
+              Log In
             </Link>
           </div>
         </form>
@@ -178,4 +126,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default ForgotPassword;
