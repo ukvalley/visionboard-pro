@@ -2,38 +2,58 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Card from '../common/Card';
 import Button from '../common/Button';
-import ProgressBar from '../common/ProgressBar';
-import { formatDate, formatCurrency, sectionNames } from '../../utils/helpers';
+import Modal from '../common/Modal';
+import { formatDate, sectionNames } from '../../utils/helpers';
 import visionBoardService from '../../services/visionBoardService';
 
 const VisionBoardList = () => {
   const [visionBoards, setVisionBoards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [boardToDelete, setBoardToDelete] = useState(null);
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     fetchVisionBoards();
   }, []);
+
+  // Clear success message after 3 seconds
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(''), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
 
   const fetchVisionBoards = async () => {
     try {
       const response = await visionBoardService.getAll();
       setVisionBoards(response.data || []);
     } catch (err) {
-      setError('Failed to load vision boards');
+      setError('Failed to load vision boards.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this vision board?')) return;
+  const openDeleteModal = (board, e) => {
+    e.preventDefault();
+    setBoardToDelete(board);
+    setShowDeleteModal(true);
+  };
+
+  const handleDelete = async () => {
+    if (!boardToDelete) return;
 
     try {
-      await visionBoardService.delete(id);
-      setVisionBoards(prev => prev.filter(board => board._id !== id));
+      await visionBoardService.delete(boardToDelete._id);
+      setVisionBoards(prev => prev.filter(board => board._id !== boardToDelete._id));
+      setSuccessMessage('Vision board deleted successfully.');
+      setShowDeleteModal(false);
+      setBoardToDelete(null);
     } catch (err) {
-      alert('Failed to delete vision board');
+      setError('Failed to delete vision board.');
     }
   };
 
@@ -78,6 +98,22 @@ const VisionBoardList = () => {
         </Link>
       </div>
 
+      {/* Success Message */}
+      {successMessage && (
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 px-4 py-3 rounded-lg text-sm flex items-center justify-between">
+          <span>{successMessage}</span>
+          <button
+            onClick={() => setSuccessMessage('')}
+            className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200 cursor-pointer"
+            aria-label="Close message"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
+
       {/* Vision Boards Grid */}
       {visionBoards.length === 0 ? (
         <Card className="text-center py-16">
@@ -87,10 +123,10 @@ const VisionBoardList = () => {
             </svg>
           </div>
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-            No vision boards yet
+            No records found.
           </h3>
           <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
-            Create your first vision board to start planning and tracking your business goals
+            Create your first vision board to start planning and tracking your business goals.
           </p>
           <Link to="/visionboards/new">
             <Button variant="primary" size="lg">
@@ -109,11 +145,10 @@ const VisionBoardList = () => {
                 {/* Actions Overlay */}
                 <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                   <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleDelete(board._id);
-                    }}
-                    className="p-2 text-gray-400 hover:text-red-500 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700"
+                    onClick={(e) => openDeleteModal(board, e)}
+                    className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 cursor-pointer"
+                    title="Delete Vision Board"
+                    aria-label="Delete Vision Board"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -183,6 +218,44 @@ const VisionBoardList = () => {
           ))}
         </div>
       )}
+    </div>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setBoardToDelete(null);
+        }}
+        title="Confirm Delete"
+        size="sm"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => {
+              setShowDeleteModal(false);
+              setBoardToDelete(null);
+            }}>
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              destructive
+              onClick={handleDelete}
+            >
+              Delete
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <p className="text-gray-700 dark:text-gray-300">
+            Are you sure you want to delete vision board <strong>{boardToDelete?.name}</strong>?
+          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            This action cannot be undone.
+          </p>
+        </div>
+      </Modal>
     </div>
   );
 };

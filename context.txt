@@ -1,0 +1,237 @@
+================================================================================
+                        VISIONBOARD PRO - PROJECT CONTEXT
+================================================================================
+Last Updated: 2026-04-04
+Project Path: /Users/umeshkhivasara/visionboard-pro
+
+================================================================================
+                              PROJECT OVERVIEW
+================================================================================
+
+VisionBoard Pro is a full-stack Business Vision Board application for
+entrepreneurs and business leaders to create, manage, and track measurable
+business goals and strategic plans. This is an execution-focused, data-driven
+CEO-level planning tool built on modern business frameworks.
+
+MISSION:
+Help entrepreneurs define their business vision, set strategic goals, track
+progress, and execute with precision using proven business frameworks.
+
+================================================================================
+                              TECH STACK
+================================================================================
+
+FRONTEND:
+  - React.js 18 + Vite (Build tool)
+  - Tailwind CSS (Styling)
+  - React Router DOM (Navigation)
+  - React Context API (State Management)
+  - Axios (HTTP Client)
+
+BACKEND:
+  - Node.js + Express.js
+  - MongoDB (Database)
+  - Mongoose (ODM)
+  - JWT (Authentication)
+  - bcryptjs (Password hashing)
+
+AI INTEGRATION:
+  - OpenAI API (AI coaching, suggestions, analysis)
+
+DEPLOYMENT:
+  - Vercel (Frontend)
+  - Render/Railway/Heroku (Backend)
+  - MongoDB Atlas (Database)
+
+================================================================================
+                              CORE FEATURES
+================================================================================
+
+1. AUTHENTICATION SYSTEM
+   - User registration with secure password hashing
+   - JWT-based authentication
+   - Protected routes for authenticated users
+   - Admin-only routes for user management
+   - Session management with token refresh
+   - User impersonation (admin feature)
+
+2. VISION BOARD MODULE (20+ Strategic Sections)
+   - Company Overview, Core Purpose, Vision, Mission
+   - Brand Promise, Core Values, BHAG (Big Hairy Audacious Goal)
+   - Vivid Description, SWOT Analysis
+   - Strategic Priorities with WWW Actions
+   - 3-Year Strategy Map
+   - SMART Goals with OKR support
+   - Quarterly Execution Plan
+   - Revenue Model & Targets (FP&A Dashboard)
+   - Organizational Structure (FACe/PACe Charts)
+   - SOP Roadmap, Automation & Systems
+   - KPI Dashboard
+   - Risk Management
+   - Collaboration Hub
+   - Strategy Summary
+
+3. PROGRESS TRACKING
+   - Real-time progress calculation across all sections
+   - Visual progress bars at module and overall levels
+   - Data-driven progress (based on actual content)
+   - Monthly update tracking
+
+4. PDF EXPORT SYSTEM
+   - Full Vision Board export
+   - One-Page Strategy Summary
+   - Professional formatting
+
+5. AI-POWERED FEATURES
+   - AI suggestions for goal alignment
+   - Risk scenario simulation
+   - "Ask Patrick" AI coaching
+   - Smart recommendations
+
+6. ADMIN DASHBOARD
+   - User management (CRUD)
+   - Analytics dashboard
+   - Platform-wide metrics
+   - User activity monitoring
+
+================================================================================
+                              SIX MODULES
+================================================================================
+
+1. VISION BOARD (Planning)     - Mission, Vision, BHAG, Core Values, SWOT
+2. TARGET TRACKER (Execution)  - OKRs, SMART Goals, Milestones, KPIs
+3. RESOURCE MANAGEMENT (People)- FACe Chart, PACe Chart, 9-Box Talent Grid
+4. EXECUTION & RISK (Execution)- WWW Actions, Risk Matrix, Project Portfolio
+5. FINANCIAL INSIGHTS (Data)   - FP&A Dashboard, CASh Strategies, ROI
+6. COLLABORATION HUB (People)  - Workspaces, Mentorship, AI Coach
+
+================================================================================
+                           BUSINESS FRAMEWORKS
+================================================================================
+
+| Framework              | Implementation                          |
+|------------------------|-----------------------------------------|
+| Scaling Up            | Rockefeller Habits, Strategic Priorities|
+| OKR Framework         | Objectives and Key Results              |
+| SMART Goals           | Goal setting module                     |
+| SWOT Analysis         | Strategic position assessment           |
+| BHAG Concept          | Big Hairy Audacious Goal (Jim Collins)  |
+| FACe/PACe Charts      | Functional/Process Accountability       |
+| 9-Box Grid            | Talent assessment matrix                |
+| CASh Strategies       | Cash acceleration methods               |
+
+================================================================================
+                              DATABASE SCHEMA
+================================================================================
+
+COLLECTIONS:
+  1. Users           - User accounts, roles, profiles
+  2. VisionBoards    - Main vision board data with 20+ sections
+  3. MonthlyUpdates  - Progress tracking over time
+  4. AdminAnalytics  - Platform analytics
+
+VISION BOARD SECTIONS (20 Total):
+  - companyOverview, corePurpose, vision, mission, brandPromise
+  - coreValues, bhag, vividDescription, swotAnalysis, strategicPriorities
+  - threeYearStrategy, smartGoals, quarterlyPlan, revenueModel
+  - organizationalStructure, sopRoadmap, automationSystems, kpiDashboard
+  - riskManagement, strategySummary, collaboration
+
+================================================================================
+                              API ENDPOINTS
+================================================================================
+
+AUTHENTICATION:
+  POST /api/auth/register
+  POST /api/auth/login
+  GET  /api/auth/me
+  PUT  /api/auth/profile
+  POST /api/auth/logout
+
+VISION BOARDS:
+  GET    /api/visionboards
+  GET    /api/visionboards/:id
+  POST   /api/visionboards
+  PUT    /api/visionboards/:id
+  DELETE /api/visionboards/:id
+  PUT    /api/visionboards/:id/section/:sectionName
+
+STRATEGY SHEET:
+  GET /api/visionboards/:id/strategy
+  PUT /api/visionboards/:id/strategy/:sectionName
+
+PROGRESS:
+  GET  /api/progress/:visionBoardId
+  POST /api/progress/:visionBoardId/monthly
+
+AI FEATURES:
+  POST /api/ai/suggestions
+  POST /api/ai/chat
+  POST /api/ai/analyze
+
+ADMIN:
+  GET /api/admin/users
+  GET /api/admin/analytics
+
+================================================================================
+                           DEVELOPMENT COMMANDS
+================================================================================
+
+ROOT LEVEL:
+  npm run dev          - Start both frontend and backend
+  npm run server       - Start backend only (port 5000)
+  npm run client       - Start frontend only (port 5173)
+  npm run install:all  - Install all dependencies
+  npm run build        - Build frontend for production
+  npm run start        - Start production server
+
+================================================================================
+                           ENVIRONMENT VARIABLES
+================================================================================
+
+SERVER (.env in /server):
+  PORT=5000
+  NODE_ENV=development
+  MONGODB_URI=mongodb://localhost:27017/visionboard-pro
+  JWT_SECRET=your-super-secret-jwt-key
+  JWT_EXPIRE=7d
+  OPENAI_API_KEY=your-openai-api-key
+
+CLIENT (.env in /client):
+  VITE_API_URL=http://localhost:5000/api
+
+================================================================================
+                              USER ROLES
+================================================================================
+
+USER:
+  - Create/edit/delete own vision boards
+  - View progress, export PDFs
+  - Use AI features
+
+ADMIN:
+  - All user permissions
+  + Manage all users
+  + View platform analytics
+  + Deactivate users
+  + Impersonate users
+
+================================================================================
+                           CODE STATISTICS
+================================================================================
+
+Total Lines of Code (Client): ~15,000+ lines
+Main Technologies: React, Node.js, Express, MongoDB
+
+================================================================================
+                              NOTES
+================================================================================
+
+- Frontend uses React.lazy + Suspense for code splitting
+- Backend includes error handling middleware
+- JWT tokens expire after 7 days
+- MongoDB schema includes pre-save hooks for progress calculation
+- All API responses follow { success: boolean, data: {}, message: string } format
+- Dark mode supported via ThemeContext
+
+================================================================================

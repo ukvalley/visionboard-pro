@@ -8,6 +8,7 @@ import Sidebar from './components/common/Sidebar';
 // Auth Components (loaded immediately for login/register pages)
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
+import ForgotPassword from './components/auth/ForgotPassword';
 
 // Lazy load pages for code-splitting
 const Home = lazy(() => import('./pages/Home'));
@@ -23,6 +24,7 @@ const UserManagementPage = lazy(() => import('./pages/UserManagementPage'));
 const VisionBoardCreator = lazy(() => import('./components/visionboard/VisionBoardCreator'));
 const MonthlyUpdate = lazy(() => import('./components/progress/MonthlyUpdate'));
 const Settings = lazy(() => import('./components/settings/Settings'));
+const ProductPlanningManager = lazy(() => import('./components/product-planning/ProductPlanningManager'));
 
 // Loading component for Suspense fallback
 const PageLoader = () => (
@@ -73,6 +75,7 @@ function App() {
             <Route path="/" element={<SuspenseWrapper><Home /></SuspenseWrapper>} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
 
             {/* Protected Routes */}
             <Route
@@ -147,6 +150,17 @@ function App() {
                 <ProtectedRoute>
                   <AppLayout>
                     <SuspenseWrapper><Settings /></SuspenseWrapper>
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/product-planning"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <SuspenseWrapper><ProductPlanningManager /></SuspenseWrapper>
                   </AppLayout>
                 </ProtectedRoute>
               }

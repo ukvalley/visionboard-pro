@@ -58,10 +58,10 @@ const ProgressTracker = () => {
     return (
       <Card className="text-center py-12">
         <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-          No vision boards yet
+          No records found.
         </h3>
         <p className="text-gray-500 dark:text-gray-400 mb-4">
-          Create a vision board first to track your progress
+          Create a vision board first to track your progress.
         </p>
         <Button variant="primary" onClick={() => navigate('/visionboards/new')}>
           Create Vision Board

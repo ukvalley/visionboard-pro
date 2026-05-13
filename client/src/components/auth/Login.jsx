@@ -1,31 +1,83 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../common/Button';
 import Input from '../common/Input';
+import { validateEmailId, validateRequired } from '../../utils/validation';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
+  const [generalError, setGeneralError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  // Load saved credentials if Remember Me was checked
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('rememberMeEmail');
+    const savedRememberMe = localStorage.getItem('rememberMe') === 'true';
+    if (savedEmail && savedRememberMe) {
+      setEmail(savedEmail);
+      setRememberMe(true);
+    }
+  }, []);
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    const emailError = validateEmailId(email, 'Email ID');
+    if (emailError) newErrors.email = emailError;
+
+    const passwordError = validateRequired(password, 'Password');
+    if (passwordError) newErrors.password = passwordError;
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setGeneralError('');
+
+    if (!validateForm()) return;
+
     setLoading(true);
 
     const result = await login(email, password);
 
     if (result.success) {
+      // Handle Remember Me
+      if (rememberMe) {
+        localStorage.setItem('rememberMeEmail', email);
+        localStorage.setItem('rememberMe', 'true');
+      } else {
+        localStorage.removeItem('rememberMeEmail');
+        localStorage.removeItem('rememberMe');
+      }
       navigate('/dashboard');
     } else {
-      setError(result.error);
+      setGeneralError(result.error || 'Invalid credentials. Please try again.');
     }
 
     setLoading(false);
+  };
+
+  // Clear field error when user types
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+    if (errors.email) {
+      setErrors(prev => ({ ...prev, email: null }));
+    }
+  };
+
+  const handlePasswordChange = (e) => {
+    setPassword(e.target.value);
+    if (errors.password) {
+      setErrors(prev => ({ ...prev, password: null }));
+    }
   };
 
   return (
@@ -50,29 +102,61 @@ const Login = () => {
 
         {/* Form */}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
+          {generalError && (
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
-              {error}
+              {generalError}
             </div>
           )}
 
           <div className="space-y-4">
             <Input
-              label="Email address"
+              label="Email ID"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              onChange={handleEmailChange}
+              placeholder="Enter Email ID"
               required
+              error={errors.email}
+              maxLength={255}
             />
-            <Input
-              label="Password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-            />
+            <div>
+              <Input
+                label="Password"
+                type="password"
+                value={password}
+                onChange={handlePasswordChange}
+                placeholder="Enter Password"
+                required
+                error={errors.password}
+                showPasswordToggle
+                maxLength={128}
+              />
+            </div>
+
+            {/* Remember Me & Forgot Password */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <input
+                  id="remember-me"
+                  name="remember-me"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded cursor-pointer"
+                />
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900 dark:text-gray-300 cursor-pointer">
+                  Remember Me
+                </label>
+              </div>
+              <div className="text-sm">
+                <Link
+                  to="/forgot-password"
+                  className="font-medium text-primary-600 hover:text-primary-500"
+                >
+                  Forgot Password?
+                </Link>
+              </div>
+            </div>
           </div>
 
           <Button
@@ -82,7 +166,7 @@ const Login = () => {
             loading={loading}
             className="w-full"
           >
-            Sign in
+            Log In
           </Button>
 
           <div className="text-center text-sm">

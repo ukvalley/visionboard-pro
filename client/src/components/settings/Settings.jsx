@@ -4,6 +4,7 @@ import { useTheme } from '../../context/ThemeContext';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Input from '../common/Input';
+import { validateName, validatePassword, validateRequired } from '../../utils/validation';
 
 const Settings = () => {
   const { user, updateProfile } = useAuth();
@@ -16,10 +17,15 @@ const Settings = () => {
     newPassword: '',
     confirmPassword: ''
   });
+  const [errors, setErrors] = useState({});
   const [message, setMessage] = useState({ type: '', text: '' });
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error when user types
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: null }));
+    }
   };
 
   const handleProfileUpdate = async (e) => {
@@ -27,12 +33,20 @@ const Settings = () => {
     setLoading(true);
     setMessage({ type: '', text: '' });
 
+    // Validate name
+    const nameError = validateName(formData.name, 'Full Name');
+    if (nameError) {
+      setErrors({ name: nameError });
+      setLoading(false);
+      return;
+    }
+
     const result = await updateProfile({ name: formData.name });
 
     if (result.success) {
-      setMessage({ type: 'success', text: 'Profile updated successfully!' });
+      setMessage({ type: 'success', text: 'Profile updated successfully.' });
     } else {
-      setMessage({ type: 'error', text: result.error || 'Failed to update profile' });
+      setMessage({ type: 'error', text: result.error || 'Failed to update profile.' });
     }
 
     setLoading(false);
@@ -40,23 +54,40 @@ const Settings = () => {
 
   const handlePasswordUpdate = async (e) => {
     e.preventDefault();
+    setMessage({ type: '', text: '' });
 
-    if (formData.newPassword !== formData.confirmPassword) {
-      setMessage({ type: 'error', text: 'Passwords do not match' });
-      return;
+    const newErrors = {};
+
+    // Validate current password
+    const currentError = validateRequired(formData.currentPassword, 'Current Password');
+    if (currentError) newErrors.currentPassword = currentError;
+
+    // Validate new password
+    const newPasswordError = validatePassword(formData.newPassword, 'New Password');
+    if (newPasswordError) newErrors.newPassword = newPasswordError;
+
+    // Validate confirm password
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Confirm New Password is required.';
+    } else if (formData.newPassword !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match.';
     }
 
-    if (formData.newPassword.length < 6) {
-      setMessage({ type: 'error', text: 'Password must be at least 6 characters' });
+    // Check new password is not same as current
+    if (formData.currentPassword && formData.newPassword === formData.currentPassword) {
+      newErrors.newPassword = 'New Password cannot be the same as Current Password.';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
     setLoading(true);
-    setMessage({ type: '', text: '' });
 
     try {
       // This would call the password update API
-      setMessage({ type: 'success', text: 'Password updated successfully!' });
+      setMessage({ type: 'success', text: 'Password updated successfully.' });
       setFormData(prev => ({
         ...prev,
         currentPassword: '',
@@ -64,7 +95,7 @@ const Settings = () => {
         confirmPassword: ''
       }));
     } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to update password' });
+      setMessage({ type: 'error', text: 'Failed to update password.' });
     }
 
     setLoading(false);
@@ -103,13 +134,16 @@ const Settings = () => {
             label="Full Name"
             value={formData.name}
             onChange={(e) => handleChange('name', e.target.value)}
+            error={errors.name}
+            placeholder="Enter Full Name"
+            maxLength={100}
           />
           <Input
-            label="Email Address"
+            label="Email ID"
             type="email"
             value={formData.email}
             disabled
-            helperText="Email cannot be changed"
+            helperText="Email ID cannot be changed."
           />
           <div className="flex justify-end">
             <Button type="submit" variant="primary" loading={loading}>
@@ -130,18 +164,30 @@ const Settings = () => {
             type="password"
             value={formData.currentPassword}
             onChange={(e) => handleChange('currentPassword', e.target.value)}
+            error={errors.currentPassword}
+            placeholder="Enter Current Password"
+            showPasswordToggle
+            maxLength={128}
           />
           <Input
             label="New Password"
             type="password"
             value={formData.newPassword}
             onChange={(e) => handleChange('newPassword', e.target.value)}
+            error={errors.newPassword}
+            placeholder="Enter New Password"
+            showPasswordToggle
+            maxLength={128}
           />
           <Input
             label="Confirm New Password"
             type="password"
             value={formData.confirmPassword}
             onChange={(e) => handleChange('confirmPassword', e.target.value)}
+            error={errors.confirmPassword}
+            placeholder="Enter Confirm New Password"
+            showPasswordToggle
+            maxLength={128}
           />
           <div className="flex justify-end">
             <Button type="submit" variant="primary" loading={loading}>

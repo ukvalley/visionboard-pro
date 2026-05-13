@@ -1,0 +1,436 @@
+================================================================================
+                      VISIONBOARD PRO - SYSTEM ARCHITECTURE
+================================================================================
+Document: system.txt
+Purpose: Technical architecture, data flow, and system design
+Updated: 2026-04-04
+
+================================================================================
+                           SYSTEM OVERVIEW
+================================================================================
+
+VisionBoard Pro is a full-stack web application built with the MERN stack
+variant (MongoDB, Express, React, Node.js). It follows a modern client-server
+architecture with RESTful API communication.
+
+ARCHITECTURE TYPE:
+  - Client-Server Architecture
+  - RESTful API Design
+  - Single Page Application (SPA)
+  - MVC Pattern on Backend
+
+================================================================================
+                           TECHNICAL STACK
+================================================================================
+
+FRONTEND ARCHITECTURE:
+  Framework: React 18
+  Build Tool: Vite 5
+  Language: JavaScript (ES6+) with JSX
+  Styling: Tailwind CSS 3
+  State Management: React Context API
+  Routing: React Router DOM 6
+  HTTP Client: Axios
+  Module System: ES Modules
+
+BACKEND ARCHITECTURE:
+  Runtime: Node.js
+  Framework: Express.js 4
+  Language: JavaScript (CommonJS)
+  Database: MongoDB
+  ODM: Mongoose 8
+  Authentication: JWT (jsonwebtoken)
+  Password Hashing: bcryptjs
+  Environment: dotenv
+  CORS: cors middleware
+
+AI INTEGRATION:
+  Provider: OpenAI
+  Library: openai npm package
+  Features: GPT-4 for coaching, suggestions, analysis
+
+================================================================================
+                           DATA FLOW
+================================================================================
+
+CLIENT (React)                              SERVER (Express)
+     |                                              |
+     |  1. User Action (e.g., save section)         |
+     |--------------------------------------------->|
+     |         POST /api/visionboards/:id           |
+     |                                              |
+     |  2. Auth Middleware validates JWT          |
+     |                                              |
+     |  3. Controller processes request            |
+     |     - Validate input                        |
+     |     - Call business logic                   |
+     |     - Interact with Model                   |
+     |                                              |
+     |  4. Model (Mongoose) interacts with DB      |
+     |     - MongoDB Atlas/Local                  |
+     |     - Pre-save hooks calculate progress    |
+     |                                              |
+     |  5. Response returned                       |
+     |<---------------------------------------------|
+     |     { success: true, data: {...} }         |
+     |                                              |
+     |  6. UI updates with new data               |
+     |     React re-renders components             |
+
+================================================================================
+                           AUTHENTICATION FLOW
+================================================================================
+
+1. REGISTRATION:
+   Client → POST /api/auth/register
+   Server → Validate input → Hash password (bcryptjs) → Save User → Return JWT
+
+2. LOGIN:
+   Client → POST /api/auth/login
+   Server → Validate credentials → Compare password → Generate JWT → Return token
+
+3. AUTHENTICATED REQUEST:
+   Client → Include JWT in Authorization header
+   Server → Verify JWT (auth middleware) → Attach user to request → Proceed
+
+4. TOKEN STRUCTURE:
+   Payload: { userId, email, role, iat, exp }
+   Expiration: 7 days
+
+5. PROTECTED ROUTES:
+   Frontend: ProtectedRoute component checks auth
+   Backend: auth middleware validates JWT
+
+================================================================================
+                           DATABASE SCHEMA
+================================================================================
+
+MONGODB COLLECTIONS:
+
+1. USERS
+   {
+     _id: ObjectId,
+     name: String,
+     email: String (unique, indexed),
+     password: String (hashed),
+     role: String ['user', 'admin'],
+     avatar: String,
+     createdAt: Date,
+     updatedAt: Date
+   }
+
+2. VISIONBOARDS (Main Document)
+   {
+     _id: ObjectId,
+     userId: ObjectId (ref: Users, indexed),
+     name: String,
+     isActive: Boolean,
+     overallProgress: Number (0-100),
+
+     // Legacy sections (8 sections)
+     sections: {
+       businessOverview: { completed, data },
+       financialGoals: { completed, data },
+       ... (6 more)
+     },
+
+     // Strategy sheet (20 sections)
+     strategySheet: {
+       companyOverview: { completed, data },
+       corePurpose: { completed, data },
+       vision: { completed, data },
+       mission: { completed, data },
+       brandPromise: { completed, data },
+       coreValues: { completed, data },
+       bhag: { completed, data },
+       vividDescription: { completed, data },
+       swotAnalysis: { completed, data },
+       strategicPriorities: { completed, data },
+       threeYearStrategy: { completed, data },
+       smartGoals: { completed, data },
+       quarterlyPlan: { completed, data },
+       revenueModel: { completed, data },
+       organizationalStructure: { completed, data },
+       sopRoadmap: { completed, data },
+       automationSystems: { completed, data },
+       kpiDashboard: { completed, data },
+       riskManagement: { completed, data },
+       collaboration: { completed, data },
+       strategySummary: { completed, data }
+     },
+
+     createdAt: Date,
+     updatedAt: Date
+   }
+
+3. MONTHLYUPDATES
+   {
+     _id: ObjectId,
+     visionBoardId: ObjectId (ref: VisionBoards),
+     month: String,
+     year: Number,
+     actualRevenue: Number,
+     actualTeamSize: Number,
+     actualLeads: Number,
+     notes: String
+   }
+
+4. ADMINANALYTICS
+   {
+     _id: ObjectId,
+     totalUsers: Number,
+     activeUsers: Number,
+     totalVisionBoards: Number,
+     averageProgress: Number,
+     date: Date
+   }
+
+INDEXES:
+  - Users: email (unique)
+  - VisionBoards: userId (for queries by user)
+
+================================================================================
+                           COMPONENT ARCHITECTURE
+================================================================================
+
+REACT COMPONENT HIERARCHY:
+
+App
+├── ThemeProvider
+├── AuthProvider
+├── Router
+│   ├── Public Routes
+│   │   ├── Home (lazy)
+│   │   ├── Login
+│   │   └── Register
+│   └── Protected Routes (ProtectedRoute)
+│       └── AppLayout
+│           ├── Sidebar
+│           └── Main Content
+│               ├── Dashboard (lazy)
+│               ├── VisionBoards (lazy)
+│               ├── VisionBoardDetail (lazy)
+│               │   └── StrategySheetManager
+│               ├── Modules (lazy)
+│               │   ├── TargetTracker
+│               │   ├── ResourceManager
+│               │   ├── ExecutionRiskManager
+│               │   ├── FinancialInsights
+│               │   └── CollaborationHub
+│               ├── Progress (lazy)
+│               ├── Admin (lazy) [admin only]
+│               └── Settings (lazy)
+
+LAZY LOADING STRATEGY:
+  - All page components use React.lazy()
+  - Suspense fallback shows loading spinner
+  - Improves initial load time
+
+================================================================================
+                           STATE MANAGEMENT
+================================================================================
+
+CONTEXT PROVIDERS:
+
+1. AuthContext
+   - user: Current user data
+   - isAuthenticated: Boolean
+   - isAdmin: Boolean
+   - isImpersonating: Boolean
+   - impersonatedUser: Object
+   - login(), logout(), impersonateUser(), stopImpersonation()
+
+2. ThemeContext
+   - theme: 'light' | 'dark'
+   - toggleTheme()
+   - Persists to localStorage
+
+LOCAL STATE:
+  - Component-level state with useState
+  - Form data handled locally until submission
+
+SERVER STATE:
+  - Custom hooks (useVisionBoard, useAuth)
+  - API calls via service layer
+  - No global cache (no React Query/SWR)
+
+================================================================================
+                           ROUTING STRUCTURE
+================================================================================
+
+ROUTE TABLE:
+
+Path                          Component              Access
+------------------------------------------------------------------------
+/                             Home                   Public
+/login                        Login                  Public
+/register                     Register               Public
+/dashboard                    Dashboard              Protected
+/visionboards                 VisionBoards           Protected
+/visionboards/new             VisionBoardCreator     Protected
+/visionboards/:id              VisionBoardDetail      Protected
+/visionboards/:id/modules      Modules                Protected
+/progress                      Progress               Protected
+/progress/:id/update           MonthlyUpdate          Protected
+/settings                      Settings               Protected
+/admin                         Admin                  Admin Only
+/admin/users                   UserManagementPage     Admin Only
+*                              → /dashboard           Redirect
+
+================================================================================
+                           API RESPONSE FORMAT
+================================================================================
+
+SUCCESS RESPONSE:
+{
+  "success": true,
+  "data": { ... },
+  "message": "Optional success message"
+}
+
+ERROR RESPONSE:
+{
+  "success": false,
+  "message": "Error description",
+  "error": "Detailed error info" (dev mode only)
+}
+
+================================================================================
+                           SECURITY MEASURES
+================================================================================
+
+AUTHENTICATION:
+  - JWT with 7-day expiration
+  - Passwords hashed with bcryptjs (salt rounds: 10)
+  - Protected routes on frontend and backend
+
+AUTHORIZATION:
+  - Role-based access control (user vs admin)
+  - Middleware checks ownership of resources
+  - Users can only access their own vision boards
+
+INPUT VALIDATION:
+  - Express-validator on backend
+  - Form validation on frontend
+  - MongoDB injection protection via Mongoose
+
+CORS:
+  - Configured for specific origins
+  - Credentials enabled for cookies
+
+ENVIRONMENT VARIABLES:
+  - Sensitive data in .env files
+  - JWT_SECRET never exposed
+  - DB credentials protected
+
+================================================================================
+                           PERFORMANCE OPTIMIZATIONS
+================================================================================
+
+FRONTEND:
+  - Code splitting with React.lazy()
+  - Suspense for async components
+  - Tailwind CSS purging unused styles
+  - Vite for fast builds and HMR
+
+BACKEND:
+  - Database indexes on frequently queried fields
+  - Efficient MongoDB queries
+  - Error handling middleware
+  - Response compression (express default)
+
+================================================================================
+                           DEPLOYMENT ARCHITECTURE
+================================================================================
+
+DEVELOPMENT:
+  - Frontend: http://localhost:5173 (Vite dev server)
+  - Backend: http://localhost:5000 (Express)
+  - Database: MongoDB local or Atlas
+
+PRODUCTION:
+  - Frontend: Vercel (static hosting)
+  - Backend: Render/Railway/Heroku (Node.js hosting)
+  - Database: MongoDB Atlas (cloud database)
+
+ENVIRONMENT VARIABLES PER ENV:
+  Development: .env files
+  Production: Platform environment variables
+
+================================================================================
+                           ERROR HANDLING
+================================================================================
+
+BACKEND:
+  - Centralized error handling middleware
+  - Async/await with try-catch in controllers
+  - Custom error classes (implicit)
+  - HTTP status codes: 200, 400, 401, 403, 404, 500
+
+FRONTEND:
+  - try-catch around API calls
+  - Error states in components
+  - User-friendly error messages
+  - Console.error for debugging
+
+================================================================================
+                           TESTING STRATEGY
+================================================================================
+
+BACKEND (Jest - configured but minimal):
+  - Unit tests for controllers
+  - Integration tests for API
+  - Test database separate from dev/prod
+
+FRONTEND (Not configured):
+  - Manual testing
+  - React DevTools for debugging
+
+================================================================================
+                           SCALABILITY CONSIDERATIONS
+================================================================================
+
+CURRENT LIMITATIONS:
+  - Single server instance (no load balancing)
+  - No caching layer (Redis)
+  - No CDN for assets
+  - No rate limiting implemented
+
+FUTURE SCALING OPTIONS:
+  - Horizontal scaling with load balancer
+  - Redis for session storage and caching
+  - CDN for static assets
+  - Rate limiting on API endpoints
+  - Database sharding if needed
+
+================================================================================
+                           EXTERNAL INTEGRATIONS
+================================================================================
+
+OPENAI:
+  - Endpoint: https://api.openai.com/v1
+  - Usage: AI coaching, business analysis
+  - Authentication: API key
+
+PDF GENERATION:
+  - Library: Built-in or jsPDF (check implementation)
+  - Client-side generation
+
+================================================================================
+                           CODE ORGANIZATION PRINCIPLES
+================================================================================
+
+FRONTEND:
+  - Feature-based folder structure
+  - Components co-located with related files
+  - Reusable components in common/
+  - Services layer for API calls
+  - Hooks for shared logic
+
+BACKEND:
+  - Separation of concerns (routes, controllers, models)
+  - Middleware for cross-cutting concerns
+  - Services for external integrations
+  - Utils for shared helpers
+
+================================================================================
